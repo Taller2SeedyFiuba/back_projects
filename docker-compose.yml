@@ -1,0 +1,33 @@
+version: "3"
+services:
+    project-service:
+        build: ./
+        volumes:
+            - ./src:/app/src
+        container_name: project-service
+        restart: always
+        environment:
+            - PORT=8080
+            - DATABASE_URL=postgres://postgres:postgres@psql-container:5432/postgres
+        networks:
+            - my-net
+        ports:
+            - ${PORT}:${PORT}
+        depends_on:
+            - psql-container
+        command: npm run dev
+    psql-container:
+        image: postgres
+        container_name: psql-projects
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        volumes:
+            - ./sql/initialize_database2.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - 5430:5432
+        networks:
+            - my-net
+            
+networks:
+    my-net:
+        driver: bridge
