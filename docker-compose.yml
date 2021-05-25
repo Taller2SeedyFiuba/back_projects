@@ -17,7 +17,7 @@ services:
             - psql-container
         command: npm run dev
     psql-container:
-        image: postgres
+        image: postgis/postgis
         container_name: psql-projects
         environment:
             - POSTGRES_PASSWORD=postgres

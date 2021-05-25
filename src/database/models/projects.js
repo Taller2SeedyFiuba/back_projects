@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 const Joi = require("joi");
 
-//Enums
+//Enums PASAR A LOWERCASE
 const project_type_enum = ['Software', 'Electronics', 'Art'];
 const project_stage_enum =  ['Funding', 'Finished', 'Cancelled'];
 
@@ -27,11 +27,10 @@ const ProjectModel = {
     type: Sequelize.ENUM(...project_stage_enum),
     allowNull: false,
   },
-  /*
   location: {
-    type: Sequelize.GEOGRAPHY,
+    type: Sequelize.GEOMETRY,
     allowNull: false,
-  },*/
+  },
   stage: {
     type: Sequelize.ENUM(...project_stage_enum), //TODO: Tiene que ser un tipo categorico custom, quizas ENUM
   },
@@ -52,10 +51,10 @@ const ProjectModel = {
   }
 }
 
-//Atributes
-const resumeAtributes = ['id', 'title'];
-const editableAtributes = ['title', 'description'];
-const publicAtributes = [ 'ownerid',
+//Attributes
+const resumeAttributes = ['id', 'ownerid', 'title'];
+const editableAttributes = ['title', 'description'];
+const publicAttributes = [ 'ownerid',
                           'id',
                           'title', 
                           'description',
@@ -78,37 +77,32 @@ const ProjectTagModel = {
 }
 
 
-//ProjectTagModel.belongsTo(ProjectModel, {foreignKey: 'projectid'})
-
 class ProjectValidator{
+
+  constructor(){
+    this.att = []
+    this.att['id'] = Joi.number().integer()
+    this.att['ownerid'] = Joi.string().max(255)
+    this.att['title'] = Joi.string().min(5).max(80)
+    this.att['description'] = Joi.string().min(5)
+    this.att['type'] = Joi.string().valid(...project_type_enum)
+    this.att['stage'] = Joi.string().valid(...project_stage_enum)
+    this.att['finishdate'] = Joi.date()
+    this.att['sponsorshipagreement'] = Joi.string().min(5)
+    this.att['seeragreement'] = Joi.string().min(5)
+    this.att['tags'] = Joi.array().items(Joi.string().min(2).max(30))
+  }
 
   newProject(project){
     const JoiSchema = Joi.object({
-      ownerid: Joi.string()
-        .max(255)
-        .required(),
-      title: Joi.string()
-        .min(5)
-        .max(80)
-        .required(),
-      description: Joi.string()
-        .min(5)
-        .max(80)
-        .required(),
-      type: Joi.string()
-        .required()
-        .valid(...project_type_enum),
-      finishdate: Joi.date()
-        .required(),
-      sponsorshipagreement: Joi.string()
-        .min(5)
-        .required(),
-      seeragreement: Joi.string()
-        .min(5)
-        .required(),
-      tags: Joi.array()
-        .items(Joi.string().min(2).max(30))
-        .unique()
+      ownerid: this.att['ownerid'].required(),
+      title: this.att['title'].required(),
+      description: this.att['description'].required(),
+      type: this.att['type'].required(),
+      finishdate: this.att['finishdate'].required(),
+      sponsorshipagreement: this.att['sponsorshipagreement'].required(),
+      seeragreement: this.att['seeragreement'].required(),
+      tags: this.att['tags']
     }).options({ abortEarly: false });
     
     return JoiSchema.validate(project);
@@ -117,7 +111,7 @@ class ProjectValidator{
   editProjectPermissions(attributes, fullPermissions){
     if (fullPermissions) return true;
     Object.keys(attributes).forEach(at => {
-      if (!editableAtributes.includes(at)) return false;
+      if (!editableAttributes.includes(at)) return false;
     })
   
     return true;
@@ -126,26 +120,15 @@ class ProjectValidator{
 
   editProject(project){
     const JoiSchema = Joi.object({
-      ownerid: Joi.string()
-        .max(255),
-      title: Joi.string()
-        .min(5)
-        .max(80),
-      description: Joi.string()
-        .min(5)
-        .max(80),
-      type: Joi.string()
-        .valid(...project_type_enum),
-      stage: Joi.string()
-        .valid(...project_stage_enum),
-      finishdate: Joi.date(),
-      sponsorshipagreement: Joi.string()
-        .min(5),
-      seeragreement: Joi.string()
-        .min(5),
-      tags: Joi.array()
-        .items(Joi.string().min(2).max(30))
-        .unique()
+      ownerid: this.att['ownerid'],
+      title: this.att['title'],
+      description: this.att['description'],
+      type: this.att['type'],
+      stage: this.att['stage'],
+      finishdate: this.att['finishdate'],
+      sponsorshipagreement: this.att['sponsorshipagreement'],
+      seeragreement: this.att['seeragreement'],
+      tags: this.att['tags'],
     }).options({ abortEarly: false });
     
     return JoiSchema.validate(project);
@@ -182,7 +165,7 @@ module.exports = {
   ProjectModel,
   ProjectTagModel,
   ProjectValidator,
-  publicAtributes,
-  editableAtributes,
-  resumeAtributes
+  publicAttributes,
+  editableAttributes,
+  resumeAttributes
 }

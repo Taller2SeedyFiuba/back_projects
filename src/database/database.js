@@ -2,8 +2,8 @@ const Sequelize = require("sequelize");
 const { ProjectModel, 
         ProjectTagModel, 
         ProjectValidator,
-        publicAtributes,
-        resumeAtributes } = require("./models/projects")
+        publicAttributes,
+        resumeAttributes } = require("./models/projects")
 
 class DataBase {
 
@@ -45,6 +45,11 @@ class DataBase {
   }
 
   async createProject(project) {
+    const location = {
+      type: 'Point',
+      coordinates: [100.5, 34.6]
+    }
+    project['location'] = location;
     let result = await this.projects.create(project);
     //console.log(result.dataValues)
     if (result && project.tags && project.tags.length > 0){
@@ -57,7 +62,7 @@ class DataBase {
     }
     return result
   }
-
+  /*
   async getAllProjectsResume(queryParams) {
 
     //TODO: - Manejo de filtrado por hashtags, con join
@@ -74,17 +79,62 @@ class DataBase {
             },
             required: true
         }],
-        attributes: resumeAtributes,
-        /*  Esto rompe, ver si tiene sentido permitir filtrar por hashtag Y por otra cosa
-        where: { 
-          params
-        }
-        */
+        attributes: resumeAttributes,//TODO: Permitir multibusqueda
+        //  Esto rompe, ver si tiene sentido permitir filtrar por hashtag Y por otra cosa
+        //where: { 
+        //  params
+        //}
+        
       });
       return project;
     }
-    return await this.projects.findAll({  attributes: resumeAtributes,
+    return await this.projects.findAll({  attributes: resumeAttributes,
                                           where: queryParams })
+  }
+  */
+  async getAllProjectsResume(params) {
+
+    //console.log(params)
+
+    const searchParams = { 'include': [],
+                           'attributes': resumeAttributes }
+    
+    if (params.filters){
+      searchParams['where'] = []
+      Object.entries(params.filters).forEach(a => {
+        if (a[0] != 'tags' && a[0] != 'location'){
+          searchParams.where.push(this.sequelize.where(this.sequelize.col(a[0]), Sequelize.Op.eq, a[1]))
+        }
+      })
+    }
+    
+    if (params.filters && params.filters.tags){
+      searchParams['include'].push({
+        'model': this.projectTag,
+        'attributes': [],
+        'where': {
+          tag: params.filters.tags
+        },
+        required: true
+      })
+    }
+    
+    if (params.filters && params.filters.location){
+      const lat = params.filters.location.lat
+      const lng = params.filters.location.lng
+      const dist = params.filters.location.dist
+
+      const location = this.sequelize.literal(`ST_GeomFromText('POINT(${lng} ${lat})')`);
+      const distance = this.sequelize.fn('ST_DistanceSphere', this.sequelize.col('location'), location);
+
+      searchParams.order = distance
+      searchParams.attributes.push([distance,'distance'])
+      searchParams.where.push(this.sequelize.where(distance, Sequelize.Op.lte, dist))
+    }
+    
+
+
+    return await this.projects.findAll(searchParams)
   }
 
   async getProject(id, perm){
@@ -104,7 +154,7 @@ class DataBase {
         }
       }) //return await this.projects.findByPk(id);
     }
-    //return await this.projects.findByPk(id, { attributes: publicAtributes });
+    //return await this.projects.findByPk(id, { attributes: publicAttributes });
     project = await this.projects.findAll({
       include: [{
         model: this.projectTag,
@@ -123,7 +173,7 @@ class DataBase {
     if (perm){
       project = await this.projects.findByPk(id);
     } else {
-      project = await this.projects.findByPk(id, { attributes: publicAtributes });
+      project = await this.projects.findByPk(id, { attributes: publicAttributes });
     }
     if (!project) return project;
     project.dataValues['tags'] = [];

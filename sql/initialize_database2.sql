@@ -1,5 +1,7 @@
 SET SEARCH_PATH TO 'public';
 
+-- CREATE EXTENSION postgis;
+
 CREATE TYPE PROJECT_TYPE AS ENUM ('Software', 'Electronics', 'Art');
 CREATE TYPE PROJECT_STAGE AS ENUM ('Funding', 'Finished', 'Cancelled');
 
@@ -15,7 +17,8 @@ CREATE TABLE projects(
 	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	finishdate TIMESTAMP NOT NULL,
 	sponsorshipagreement TEXT NOT NULL CHECK (sponsorshipagreement <> ''),
-	seeragreement TEXT NOT NULL CHECK (seeragreement <> '')
+	seeragreement TEXT NOT NULL CHECK (seeragreement <> ''),
+	location GEOMETRY
 	
 );
 
