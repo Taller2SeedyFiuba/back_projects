@@ -30,18 +30,3 @@ function getProjectsRouter(database, proxy) {
 }
 
 module.exports = { getProjectsRouter };
-
-
-
-
-
-/*
-
-Crear un proyecto -> POST /api
-Cancelar un proyecto -> PUT /api/cancel/{pid}
-Editar un proyecto -> PUT /api/{pid}?root
-Listar proyectos (con filtrado) -> GET /api/filter?lo=numb$lat=numb$
-Visualizar proyecto -> GET /api/{pid}?root
-Obtener contratos -> GET /api/{pid}/agreements
-
-*/
