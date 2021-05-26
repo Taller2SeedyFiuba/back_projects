@@ -41,22 +41,22 @@ class DataBase {
   }
 
   async createProject(project) {
+    let id = 0;
     const location = {
       type: 'Point',
       coordinates: [project.location.lat, project.location.lng]
     }
     project['location'] = location;
     let result = await this.projects.create(project);
-    //console.log(result.dataValues)
     if (result && project.tags && project.tags.length > 0){
-      const id = result.dataValues.id
+      id = result.dataValues.id
       await this.projectTag.destroy({ where: { projectid : id } });
       if (!await this.projectAddTags(id, project.tags)){
         this.deleteProject(id);
         return 0;
       }
     }
-    return this.getProject(id)
+    return result ? this.getProject(id) : 0
   }
   
   async getAllProjectsResume(params) {
@@ -132,7 +132,7 @@ class DataBase {
       await this.projectTag.destroy({ where: { projectid : id } });
       if (!await this.projectAddTags(id, newData.tags)) return 0;
     }
-    return response[0];
+    return response[0] ? this.getProject(id) : 0;
   }
 }
 

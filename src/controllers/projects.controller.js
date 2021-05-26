@@ -71,7 +71,8 @@ class ProjectsController {
     const { id } = req.params;
     const { perm } = req.query;
 
-    if (!Number.isInteger(id)) throw ApiError.badRequest("id must be an integer")
+    const isNumber = /^\d+$/.test(id);
+    if (!isNumber) throw ApiError.badRequest("id must be an integer")
 
     const project = await this.database.getProject(id, perm);
     if (!project) throw ApiError.notFound("Project not found");
@@ -108,7 +109,8 @@ class ProjectsController {
     const { id } = req.params;
 
     //Check if the id is valid
-    if (!Number.isInteger(id)) throw ApiError.badRequest("id must be an integer")
+    const isNumber = /^\d+$/.test(id);
+    if (!isNumber) throw ApiError.badRequest("id must be an integer")
     //Check if there is a project with that id
     const ProjectInDatabase = await this.database.getProject(id);
     if (!ProjectInDatabase) throw ApiError.notFound("Project do not exists")
@@ -117,6 +119,7 @@ class ProjectsController {
     if (!projectDeleted) throw ApiError.serverError("Server error")
     return res.status(200).json({
       status: "success",
+      data: ProjectInDatabase
     });
   }
 
@@ -124,7 +127,8 @@ class ProjectsController {
     const { id } = req.params;
     const { root } = req.query;
     //Check if id is valid
-    if (!Number.isInteger(id)) throw ApiError.badRequest("id must be an integer")
+    const isNumber = /^\d+$/.test(id);
+    if (!isNumber) throw ApiError.badRequest("id must be an integer")
     //Check project existance
     const projectToUpdate = await this.database.getProject(id);
     if (!projectToUpdate) throw ApiError.notFound("Project not found")
@@ -140,6 +144,7 @@ class ProjectsController {
     //PENSAR: Vale la pena un request mas a la BD para devolver el proyecto final?
     return res.status(200).json({
       status: "success",
+      data: projectUpdated
     });
   }
 }
