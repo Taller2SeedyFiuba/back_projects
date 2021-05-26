@@ -1,0 +1,37 @@
+{
+  "name": "back_projects",
+  "version": "1.0.0",
+  "description": "SeedyFiuba project microservice",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --inspect=0.0.0.0:8000 src/index.js",
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JulianVentura/Seedyfiuba_back_projects.git"
+  },
+  "author": "Grupo 7 Taller2 FIUBA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JulianVentura/Seedyfiuba_back_projects/issues"
+  },
+  "homepage": "https://github.com/JulianVentura/Seedyfiuba_back_projects#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "express": "^4.17.1",
+    "joi": "^17.4.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.6.2",
+    "swagger-jsdoc": "^6.0.0",
+    "swagger-ui-express": "^4.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "jest": "^26.6.3",
+    "supertest": "^6.1.3"
+  }
+}
