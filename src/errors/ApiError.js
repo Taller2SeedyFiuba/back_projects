@@ -19,6 +19,15 @@ class ApiError {
   static serverError(message) {
     return new ApiError(500, message);
   }
+
+  static dependencyError(message) {
+    return new ApiError(502, message);
+  }
+
+  static dependencyTimout(message) {
+    return new ApiError(504, message);
+  }
+
 };
 
 module.exports = { ApiError };

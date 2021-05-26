@@ -1,13 +1,17 @@
 const axios = require('axios');
-const URL = 'https://localhost:8080/api';
+const { msErrorHandler } = require('../errors/errorHandler');
+const URL = process.env.USER_SERVICE_URL || 'http://user-service:8080/api';
+//const URL = 'https://seedyfiuba-back-users.herokuapp.com/api';
 
 class Proxy{
-    async userExists(id){
-        const response = await axios.get(URL + '/' + req.id);
-        console.log(response.data);
-        res.status(200).send(response.data);
+    async validateUserExistance(id){
+
+        try {
+          await axios.get(URL + '/' + id);
+        } catch (err) {
+          msErrorHandler(err);
+        }
     }
 }
-
 
 module.exports = { Proxy }

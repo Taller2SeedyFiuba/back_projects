@@ -1,9 +1,5 @@
 const Sequelize = require("sequelize");
-const { ProjectModel, 
-        ProjectTagModel, 
-        ProjectValidator,
-        publicAttributes,
-        resumeAttributes } = require("./models/projects")
+const { Project } = require("./models/projects")
 
 class DataBase {
 
@@ -28,12 +24,12 @@ class DataBase {
 
     //Creamos el modelado de usuarios
     this.projects = this.sequelize.define('projects', 
-                                          ProjectModel, 
+                                           Project.model, 
                                           { timestamps: false,
                                             freezeTableName: true });
     //Creamos el modelado de proyectos
     this.projectTag = this.sequelize.define('projectTag', 
-                                            ProjectTagModel, 
+                                            Project.tagModel, 
                                             { timestamps: false,
                                               freezeTableName: true,
                                               tableName : 'projecttag'});
@@ -47,7 +43,7 @@ class DataBase {
   async createProject(project) {
     const location = {
       type: 'Point',
-      coordinates: [100.5, 34.6]
+      coordinates: [project.location.lat, project.location.lng]
     }
     project['location'] = location;
     let result = await this.projects.create(project);
@@ -60,44 +56,13 @@ class DataBase {
         return 0;
       }
     }
-    return result
+    return this.getProject(id)
   }
-  /*
-  async getAllProjectsResume(queryParams) {
-
-    //TODO: - Manejo de filtrado por hashtags, con join
-    //      - Manejar la query geografica, quizas con un sequelize.raw
-    let project = {}
-    if (queryParams.hashtag){
-      //const params = Object.assign({}, queryParams.Params, { hashtag: undefined })
-      project = await this.projects.findAll({
-        include: [{
-            model: this.projectTag,
-            attributes: [],
-            where: {
-              tag: queryParams.hashtag
-            },
-            required: true
-        }],
-        attributes: resumeAttributes,//TODO: Permitir multibusqueda
-        //  Esto rompe, ver si tiene sentido permitir filtrar por hashtag Y por otra cosa
-        //where: { 
-        //  params
-        //}
-        
-      });
-      return project;
-    }
-    return await this.projects.findAll({  attributes: resumeAttributes,
-                                          where: queryParams })
-  }
-  */
+  
   async getAllProjectsResume(params) {
 
-    //console.log(params)
-
     const searchParams = { 'include': [],
-                           'attributes': resumeAttributes }
+                           'attributes': Project.attributes.resume }
     
     if (params.filters){
       searchParams['where'] = []
@@ -132,48 +97,16 @@ class DataBase {
       searchParams.where.push(this.sequelize.where(distance, Sequelize.Op.lte, dist))
     }
     
-
-
     return await this.projects.findAll(searchParams)
   }
 
   async getProject(id, perm){
-    /* ANDA, PERO DEVUELVE A LOS TAGS COMO OBJETO.
-    let project = {}
-    if (perm){
-      project = await this.projects.findAll({
-        include: [{
-            model: this.projectTag,
-            attributes: ['tag'],
-            where: {
-              projectid: id
-            }
-        }],
-        where: { 
-          id 
-        }
-      }) //return await this.projects.findByPk(id);
-    }
-    //return await this.projects.findByPk(id, { attributes: publicAttributes });
-    project = await this.projects.findAll({
-      include: [{
-        model: this.projectTag,
-        attributes: ['tag'],
-        where: {
-          projectid: id
-        }
-      }],
-      where: { 
-        id 
-      }
-    })
-    */
     const tags = await this.projectTag.findAll({ attributes: ['tag'], where: { projectid : id}})
     let project = {};
     if (perm){
-      project = await this.projects.findByPk(id);
+      project = await this.projects.findByPk(id, { attributes: Project.attributes.public });
     } else {
-      project = await this.projects.findByPk(id, { attributes: publicAttributes });
+      project = await this.projects.findByPk(id, { attributes: Project.attributes.publicPrivate });
     }
     if (!project) return project;
     project.dataValues['tags'] = [];
@@ -200,10 +133,6 @@ class DataBase {
       if (!await this.projectAddTags(id, newData.tags)) return 0;
     }
     return response[0];
-  }
-  
-  getProjectValidator() {
-    return new ProjectValidator();
   }
 }
 

@@ -1,11 +1,37 @@
 const Sequelize = require("sequelize");
 const Joi = require("joi");
 
-//Enums PASAR A LOWERCASE
-const project_type_enum = ['Software', 'Electronics', 'Art'];
-const project_stage_enum =  ['Funding', 'Finished', 'Cancelled'];
 
-const ProjectModel = {
+const Project = {}
+
+//Enums
+const type = ['software', 'electronics', 'art'];
+const stage =  ['funding', 'finished', 'cancelled'];
+
+Project.enums = { type, stage }
+
+//Attributes
+
+const attributes = {}
+
+attributes.resume = ['id', 'ownerid', 'title'];
+attributes.editable = ['title', 'description'];
+attributes.private = []  //Agregar en caso de que sea necesario
+attributes.public = [ 'ownerid',
+                      'id',
+                      'title', 
+                      'description',
+                      'type',
+                      'stage',
+                      'creationdate',
+                      'finishdate',
+                      'sponsorshipagreement',
+                      'seeragreement' ]
+attributes.publicPrivate = attributes.public.concat(attributes.private)
+
+Project.attributes = attributes;
+
+Project.model = {
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -24,7 +50,7 @@ const ProjectModel = {
     allowNull: false,
   },
   type: {
-    type: Sequelize.ENUM(...project_stage_enum),
+    type: Sequelize.ENUM(...Project.enums.type),
     allowNull: false,
   },
   location: {
@@ -32,7 +58,7 @@ const ProjectModel = {
     allowNull: false,
   },
   stage: {
-    type: Sequelize.ENUM(...project_stage_enum), //TODO: Tiene que ser un tipo categorico custom, quizas ENUM
+    type: Sequelize.ENUM(...Project.enums.stage),
   },
   creationdate: {
     type: Sequelize.DATE,
@@ -51,21 +77,8 @@ const ProjectModel = {
   }
 }
 
-//Attributes
-const resumeAttributes = ['id', 'ownerid', 'title'];
-const editableAttributes = ['title', 'description'];
-const publicAttributes = [ 'ownerid',
-                          'id',
-                          'title', 
-                          'description',
-                          'type',
-                          //'location',
-                          'stage',
-                          'finishdate',
-                          'sponsorshipagreement',
-                          'seeragreement' ]
 
-const ProjectTagModel = {
+Project.tagModel = {
   projectid: {
     type: Sequelize.INTEGER,
     primaryKey: true,
@@ -77,95 +90,67 @@ const ProjectTagModel = {
 }
 
 
-class ProjectValidator{
+Project.attSchema = {}
+Project.attSchema['id'] = Joi.number().integer()
+Project.attSchema['ownerid'] = Joi.string().max(255)
+Project.attSchema['title'] = Joi.string().min(5).max(80)
+Project.attSchema['description'] = Joi.string().min(5)
+Project.attSchema['type'] = Joi.string().valid(...Project.enums.type)
+Project.attSchema['stage'] = Joi.string().valid(...Project.enums.stage)
+Project.attSchema['finishdate'] = Joi.date()
+Project.attSchema['sponsorshipagreement'] = Joi.string().min(5)
+Project.attSchema['seeragreement'] = Joi.string().min(5)
+Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30))
+Project.attSchema['location'] = Joi.object({
+  'lat': Joi.number().required(),
+  'lng': Joi.number().required()
+})
 
-  constructor(){
-    this.att = []
-    this.att['id'] = Joi.number().integer()
-    this.att['ownerid'] = Joi.string().max(255)
-    this.att['title'] = Joi.string().min(5).max(80)
-    this.att['description'] = Joi.string().min(5)
-    this.att['type'] = Joi.string().valid(...project_type_enum)
-    this.att['stage'] = Joi.string().valid(...project_stage_enum)
-    this.att['finishdate'] = Joi.date()
-    this.att['sponsorshipagreement'] = Joi.string().min(5)
-    this.att['seeragreement'] = Joi.string().min(5)
-    this.att['tags'] = Joi.array().items(Joi.string().min(2).max(30))
-  }
 
-  newProject(project){
-    const JoiSchema = Joi.object({
-      ownerid: this.att['ownerid'].required(),
-      title: this.att['title'].required(),
-      description: this.att['description'].required(),
-      type: this.att['type'].required(),
-      finishdate: this.att['finishdate'].required(),
-      sponsorshipagreement: this.att['sponsorshipagreement'].required(),
-      seeragreement: this.att['seeragreement'].required(),
-      tags: this.att['tags']
-    }).options({ abortEarly: false });
-    
-    return JoiSchema.validate(project);
-  }
+Project.validateNew = function (project){
+  const JoiSchema = Joi.object({
+    ownerid: this.attSchema['ownerid'].required(),
+    title: this.attSchema['title'].required(),
+    description: this.attSchema['description'].required(),
+    type: this.attSchema['type'].required(),
+    finishdate: this.attSchema['finishdate'].required(),
+    sponsorshipagreement: this.attSchema['sponsorshipagreement'].required(),
+    seeragreement: this.attSchema['seeragreement'].required(),
+    location: this.attSchema['location'].required(),
+    tags: this.attSchema['tags']
+  }).options({ abortEarly: false });
+  
+  return JoiSchema.validate(project);
+}
 
-  editProjectPermissions(attributes, fullPermissions){
+  
+
+Project.validateEditionPermissions = function (attributes, fullPermissions){
     if (fullPermissions) return true;
     Object.keys(attributes).forEach(at => {
-      if (!editableAttributes.includes(at)) return false;
+      if (!this.attributes.editable.includes(at)) return false;
     })
   
     return true;
 
   }
 
-  editProject(project){
+Project.validateEdition = function (project){
     const JoiSchema = Joi.object({
-      ownerid: this.att['ownerid'],
-      title: this.att['title'],
-      description: this.att['description'],
-      type: this.att['type'],
-      stage: this.att['stage'],
-      finishdate: this.att['finishdate'],
-      sponsorshipagreement: this.att['sponsorshipagreement'],
-      seeragreement: this.att['seeragreement'],
-      tags: this.att['tags'],
+      ownerid: this.attSchema['ownerid'],
+      title: this.attSchema['title'],
+      description: this.attSchema['description'],
+      type: this.attSchema['type'],
+      stage: this.attSchema['stage'],
+      finishdate: this.attSchema['finishdate'],
+      sponsorshipagreement: this.attSchema['sponsorshipagreement'],
+      seeragreement: this.attSchema['seeragreement'],
+      tags: this.attSchema['tags'],
     }).options({ abortEarly: false });
     
     return JoiSchema.validate(project);
   }
 
-  validateQueryParameters(parameters){
-    const validParameters = ['lat', 'lng', 'dist', 'stage', 'type', 'hashtag'];
-    const { lng,
-            lat,
-            dist,
-            stage,
-            type } = parameters;
-    Object.keys(parameters).forEach(param => {
-      if (!validParameters.includes(param)) return { error: Error("Wrong filter parameters") }
-    })
-    if (lng | lat | dist){
-      if (!(lng && lat && dist)){
-        return { error: Error("Geographical search requires latitude longitude and distance query parameters") }
-      }
-    }
-    if (stage){
-      if (!project_stage_enum.includes(stage)) return { error: Error("Wrong value in 'stage' query parameter") }
-    }
-    if (type){
-      if (!project_type_enum.includes(type)) return { error: Error("Wrong value in 'type' query parameter") }
-    }
-
-    return { parameters }
-  }
-
-}
-
 module.exports = {
-  ProjectModel,
-  ProjectTagModel,
-  ProjectValidator,
-  publicAttributes,
-  editableAttributes,
-  resumeAttributes
+  Project
 }

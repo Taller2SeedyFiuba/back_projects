@@ -1,66 +1,39 @@
--- Initialization script, projects microservice, SeedyFiuba Backend.
+SET SEARCH_PATH TO 'public';
 
--- Enable PostGIS (as of 3.0 contains just geometry/geography)
 CREATE EXTENSION postgis;
--- enable raster support (for 3+)
-CREATE EXTENSION postgis_raster;
--- Enable Topology
-CREATE EXTENSION postgis_topology;
 
--- We create a database from the .csv files
+CREATE TYPE PROJECT_TYPE AS ENUM ('software', 'electronics', 'art');
+CREATE TYPE PROJECT_STAGE AS ENUM ('funding', 'finished', 'cancelled');
 
-DROP TABLE IF EXISTS cities;
-
-CREATE TABLE cities(
-	city VARCHAR(50) NOT NULL,
-	country VARCHAR(30) NOT NULL,
-	lat DECIMAL(10, 4) NOT NULL,
-	lng DECIMAL(10, 4) NOT NULL
-);
-
-ALTER TABLE cities ADD CONSTRAINT pk_cities PRIMARY KEY (country, city);
-
---COPY cities(city, lat, lng, country) FROM PROGRAM 'awk FNR-1 csv/*.csv | cat' DELIMITER ',' CSV HEADER;
--- COPY cities(city, lat, lng, country) FROM PROGRAM 'awk FNR-1 csv/*.csv | cat' DELIMITER ',' CSV HEADER;
-COPY cities(city, lat, lng, country) FROM './csv/ar.csv' DELIMITER ',' CSV HEADER;
-
-
-SELECT postgis_full_version();
-
-/*
--- Enable PostGIS Advanced 3D
--- and other geoprocessing algorithms
--- sfcgal not available with all distributions
-CREATE EXTENSION postgis_sfcgal;
--- fuzzy matching needed for Tiger
-CREATE EXTENSION fuzzystrmatch;
--- rule based standardizer
-CREATE EXTENSION address_standardizer;
--- example rule data set
-CREATE EXTENSION address_standardizer_data_us;
--- Enable US Tiger Geocoder
-CREATE EXTENSION postgis_tiger_geocoder;
-*/
 DROP TABLE IF EXISTS projects;
 
 CREATE TABLE projects(
-	id INTEGER NOT NULL SERIAL,
-	owneruid VARCHAR(255) NOT NULL,
-	description VARCHAR(MAX),
-	location GEOGRAPHY
-
+	id SERIAL PRIMARY KEY,
+	ownerid VARCHAR(255) NOT NULL CHECK (ownerid <> ''),
+	title VARCHAR(80) NOT NULL CHECK (title <> ''),
+	description TEXT NOT NULL CHECK (description <> ''),
+	type PROJECT_TYPE NOT NULL,
+	stage PROJECT_STAGE NOT NULL DEFAULT 'funding',
+	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	finishdate TIMESTAMP NOT NULL,
+	sponsorshipagreement TEXT NOT NULL CHECK (sponsorshipagreement <> ''),
+	seeragreement TEXT NOT NULL CHECK (seeragreement <> ''),
+	location GEOMETRY
+	
 );
 
+DROP TABLE IF EXISTS projectTag;
 
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users(
-	id VARCHAR(255) NOT NULL CHECK (id <> ''),
-	firstname VARCHAR(30) NOT NULL CHECK (firstname <> ''),
-	lastname VARCHAR(30) NOT NULL CHECK (lastname <> ''),
-	email VARCHAR(30) NOT NULL CHECK (email <> ''),
-	birthdate date NOT NULL,
-	signindate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE projectTag(
+	projectid INTEGER NOT NULL,
+	tag VARCHAR(30) NOT NULL CHECK (tag <> '')
 );
 
-ALTER TABLE users ADD CONSTRAINT pk_users PRIMARY KEY(id);
+ALTER TABLE projectTag ADD CONSTRAINT pk_projecttag PRIMARY KEY(projectid, tag);
+ALTER TABLE projectTag ADD CONSTRAINT fk_projecttag FOREIGN KEY(projectid) REFERENCES projects ON DELETE CASCADE;
+
+
+
+
+
+

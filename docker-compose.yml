@@ -7,27 +7,39 @@ services:
         container_name: project-service
         restart: always
         environment:
-            - PORT=8080
-            - DATABASE_URL=postgres://postgres:postgres@psql-container:5432/postgres
+            - PORT=8081
+            - DATABASE_URL=postgres://postgres:postgres@psql-projects:5432/postgres
         networks:
-            - my-net
+            - default
+            - project-net
         ports:
-            - ${PORT}:${PORT}
+            - 8081:8081
         depends_on:
-            - psql-container
+            psql-projects:
+                condition: service_healthy
         command: npm run dev
-    psql-container:
+        
+    psql-projects:
         image: postgis/postgis
         container_name: psql-projects
         environment:
             - POSTGRES_PASSWORD=postgres
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
         volumes:
-            - ./sql/initialize_database2.sql:/docker-entrypoint-initdb.d/init.sql
+            - ./sql/initialize_database.sql:/docker-entrypoint-initdb.d/init.sql
         ports:
-            - 5430:5432
+            - 5429:5432
         networks:
-            - my-net
+            - project-net
             
 networks:
-    my-net:
+    default:
+        external: true
+        name: my-net
+    project-net:
         driver: bridge
+        name: project-net
