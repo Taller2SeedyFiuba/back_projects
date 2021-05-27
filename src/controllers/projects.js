@@ -4,17 +4,6 @@ const validator = require("../models/project-validator")
 const proxy = require("../proxy/proxy")
 const Joi = require("joi")
 
-/*
-
-const {
-  createProject: createProjectDb,
-  getProject: getProjectDb,
-  getAllProjectsResume: getAllProjectResumeDb,
-  updateProject: updateProjectDb,
-  deleteProject: deleteProjectDb,
-  projectAddTags: projectAddTagsDb } = require("../models/project");
-
-*/
 
 //Aux function 
 
