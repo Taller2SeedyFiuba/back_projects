@@ -1,6 +1,4 @@
-const Sequelize = require("sequelize");
 const Joi = require("joi");
-
 
 const Project = {}
 
@@ -11,7 +9,6 @@ const stage =  ['funding', 'finished', 'cancelled'];
 Project.enums = { type, stage }
 
 //Attributes
-
 const attributes = {}
 
 attributes.resume = ['id', 'ownerid', 'title'];
@@ -23,72 +20,15 @@ attributes.public = [ 'ownerid',
                       'description',
                       'type',
                       'stage',
+                      //'location',
                       'creationdate',
                       'finishdate',
                       'sponsorshipagreement',
                       'seeragreement' ]
+
 attributes.publicPrivate = attributes.public.concat(attributes.private)
 
 Project.attributes = attributes;
-
-Project.model = {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  ownerid: {
-    type: Sequelize.CHAR(255),
-    allowNull: false,
-  },
-  title: {
-    type: Sequelize.CHAR(80),
-    allowNull: false,
-  },
-  description: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
-  type: {
-    type: Sequelize.ENUM(...Project.enums.type),
-    allowNull: false,
-  },
-  location: {
-    type: Sequelize.GEOMETRY,
-    allowNull: false,
-  },
-  stage: {
-    type: Sequelize.ENUM(...Project.enums.stage),
-  },
-  creationdate: {
-    type: Sequelize.DATE,
-  },
-  finishdate: {
-    type: Sequelize.DATE,
-    allowNull: false,
-  },
-  sponsorshipagreement: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
-  seeragreement: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  }
-}
-
-
-Project.tagModel = {
-  projectid: {
-    type: Sequelize.INTEGER,
-    primaryKey: true,
-  },
-  tag: {
-    type: Sequelize.CHAR(30),
-    primaryKey: true,
-  }
-}
-
 
 Project.attSchema = {}
 Project.attSchema['id'] = Joi.number().integer()
@@ -108,6 +48,7 @@ Project.attSchema['location'] = Joi.object({
 
 
 Project.validateNew = function (project){
+
   const JoiSchema = Joi.object({
     ownerid: this.attSchema['ownerid'].required(),
     title: this.attSchema['title'].required(),
@@ -123,34 +64,30 @@ Project.validateNew = function (project){
   return JoiSchema.validate(project);
 }
 
-  
-
 Project.validateEditionPermissions = function (attributes, fullPermissions){
-    if (fullPermissions) return true;
-    Object.keys(attributes).forEach(at => {
-      if (!this.attributes.editable.includes(at)) return false;
-    })
-  
-    return true;
 
-  }
+  if (fullPermissions) return true;
+  Object.keys(attributes).forEach(at => {
+    if (!this.attributes.editable.includes(at)) return false;
+  })
+ 
+  return true;
+}
 
 Project.validateEdition = function (project){
-    const JoiSchema = Joi.object({
-      ownerid: this.attSchema['ownerid'],
-      title: this.attSchema['title'],
-      description: this.attSchema['description'],
-      type: this.attSchema['type'],
-      stage: this.attSchema['stage'],
-      finishdate: this.attSchema['finishdate'],
-      sponsorshipagreement: this.attSchema['sponsorshipagreement'],
-      seeragreement: this.attSchema['seeragreement'],
-      tags: this.attSchema['tags'],
-    }).options({ abortEarly: false });
-    
-    return JoiSchema.validate(project);
-  }
-
-module.exports = {
-  Project
+  const JoiSchema = Joi.object({
+    ownerid: this.attSchema['ownerid'],
+    title: this.attSchema['title'],
+    description: this.attSchema['description'],
+    type: this.attSchema['type'],
+    stage: this.attSchema['stage'],
+    finishdate: this.attSchema['finishdate'],
+    sponsorshipagreement: this.attSchema['sponsorshipagreement'],
+    seeragreement: this.attSchema['seeragreement'],
+    tags: this.attSchema['tags'],
+  }).options({ abortEarly: false });
+  
+  return JoiSchema.validate(project);
 }
+
+module.exports = Project

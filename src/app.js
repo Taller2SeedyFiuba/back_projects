@@ -13,7 +13,9 @@ const { getProjectsRouter } = require("./routes/projects");
 const { getGeneralRouter } = require("./routes/general");
 
 //Importamos handlers de error
-const { notDefinedHandler, errorHandler} = require("./errors/errorHandler");
+const { notDefinedHandler, 
+        errorHandler, 
+        hocError} = require("./errors/handler");
 
 const swaggerOptions = {
     swaggerDefinition: {
@@ -34,7 +36,7 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-function createApp(database, proxy, log=true){
+function createApp(log=true){
 
     //Iniciamos la aplicacion
     const app = express();
@@ -45,8 +47,8 @@ function createApp(database, proxy, log=true){
 
     //Rutas
     app.use('/api/doc', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-    app.use('/api/general', getGeneralRouter(database));
-    app.use('/api', getProjectsRouter(database, proxy));
+    app.use('/api/general', hocError(getGeneralRouter()));
+    app.use('/api', getProjectsRouter());
 
     app.use(notDefinedHandler);
     app.use(errorHandler);
