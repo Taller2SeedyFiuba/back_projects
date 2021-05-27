@@ -1,6 +1,6 @@
 SET SEARCH_PATH TO 'public';
 
-CREATE EXTENSION postgis;
+-- CREATE EXTENSION postgis;
 
 CREATE TYPE PROJECT_TYPE AS ENUM ('software', 'electronics', 'art');
 CREATE TYPE PROJECT_STAGE AS ENUM ('funding', 'finished', 'cancelled');

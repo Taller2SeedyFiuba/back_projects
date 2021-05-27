@@ -1,30 +1,21 @@
 const router = require("express").Router();
-//const { validateProject } = require("../database/models/projects")
-const { ProjectsController } = require("../controllers/projects.controller");
+const { hocError } = require('../errors/handler');
+const pc = require("../controllers/projects");
 
 function getProjectsRouter(database, proxy) {
 
-  const pc = new ProjectsController(database, proxy);
+  router.post('/', hocError(pc.createProject));
 
-  //Permite atrapar errores sin necesidad de try catch
-  const use = fn => (req, res, next) =>
-    Promise.resolve(fn(req, res, next)).catch(next);
+  router.get('/view/:id', hocError(pc.getProject));
 
-  
-  router.post('/', use(pc.createProject.bind(pc)));
-
-  router.get('/view/:id', use(pc.getProject.bind(pc)));
-
+  //Posible implementacion
   //router.put('/cancel/:id', use(pc.cancelProject.bind(pc)));
 
-  router.put('/:id', use(pc.updateProject.bind(pc)));
+  router.put('/:id', hocError(pc.updateProject));
 
-  router.get('/filter', use(pc.listProjects.bind(pc)));
+  router.get('/search', hocError(pc.listProjects));
 
-  router.delete('/:id', use(pc.deleteProject.bind(pc)));
-
-  //router.get('/:id/agreements', use(pc.getProjectAgreements.bind(pc)));
-
+  router.delete('/:id', hocError(pc.deleteProject));
 
   return router;
 }

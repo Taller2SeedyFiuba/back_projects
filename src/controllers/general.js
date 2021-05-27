@@ -1,4 +1,4 @@
-const { sequelize } = require("../database/database");
+const { sequelize } = require("../database/index");
 
 async function getDatabaseStatus(req, res) {
   await this.sequelize.getStatus();

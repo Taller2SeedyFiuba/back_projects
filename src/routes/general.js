@@ -3,7 +3,7 @@ const router = Router();
 
 const {
   getDatabaseStatus
-} = require("../controllers/general.controller");
+} = require("../controllers/general");
 
 const use = fn => (req, res, next) =>
   Promise.resolve(fn(req, res, next)).catch(next);
