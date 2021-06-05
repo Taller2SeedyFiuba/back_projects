@@ -36,7 +36,8 @@ test('/getProject successful response', async () => {
         "creationdate": "2020-03-03",
         "sponsorshipagreement": "Test sponsorship agreement",
         "seeragreement": "Test seer agreement",
-        "tags": ["test1tag1", "test1tag2"]
+        "tags": ["test1tag1", "test1tag2"],
+        "multimedia": ["image1", "image2"]
       }
     }
   };
@@ -62,6 +63,7 @@ test('/listProjects successful response', async () => {
           "id": "1",
           "ownerid": "userid1",
           "title": "Test title 1",
+          "icon": "image1"
         }
       ]
     }
@@ -89,7 +91,8 @@ test('/createProject successful response', async () => {
         'lat': 100,
         'lng': 30
       },
-      "tags": ["test2tag1", "test2tag2"]
+      "tags": ["test2tag1", "test2tag2"],
+      "multimedia": ["imageUrl1", "imageUrl2", "imageUrl3"]
     }
   }
 
@@ -106,7 +109,8 @@ test('/createProject successful response', async () => {
         "finishdate": "2021-08-11",
         "sponsorshipagreement": "Test sponsorship agreement 2",
         "seeragreement": "Test seer agreement 2",
-        "tags": ["test2tag1", "test2tag2"]
+        "tags": ["test2tag1", "test2tag2"],
+        "multimedia": ["imageUrl1", "imageUrl2", "imageUrl3"]
       }
     }
   };
@@ -139,7 +143,8 @@ test('/deleteProject successful response', async () => {
         "creationdate": "2020-03-03",
         "sponsorshipagreement": "Test sponsorship agreement",
         "seeragreement": "Test seer agreement",
-        "tags": ["test1tag1", "test1tag2"]
+        "tags": ["test1tag1", "test1tag2"],
+        "multimedia": ["image1", "image2"]
       }
     }
   };
@@ -161,7 +166,8 @@ test('/updateProject successful response', async () => {
     body: {
       "title": "Test title 1 modified",
       "description": "Test description 1 modified",
-      "tags": ["test1tag1modified", "test1tag2"]
+      "tags": ["test1tag1modified", "test1tag2"],
+      "multimedia": ["editImage1"]
     }
   }
 
@@ -178,7 +184,8 @@ test('/updateProject successful response', async () => {
         "creationdate": "2020-03-03",
         "sponsorshipagreement": "Test sponsorship agreement",
         "seeragreement": "Test seer agreement",
-        "tags": ["test1tag1modified", "test1tag2"]
+        "tags": ["test1tag1modified", "test1tag2"],
+        "multimedia": ["editImage1"]
       }
     }
   };

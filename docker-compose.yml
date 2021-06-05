@@ -7,13 +7,14 @@ services:
         container_name: project-service
         restart: always
         environment:
-            - PORT=8081
+            - PORT=8082
             - DATABASE_URL=postgres://postgres:postgres@psql-projects:5432/postgres
+            - ENV=development
         networks:
             - default
             - project-net
         ports:
-            - 8081:8081
+            - 8082:8082
         depends_on:
             psql-projects:
                 condition: service_healthy

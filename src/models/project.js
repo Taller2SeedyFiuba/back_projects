@@ -1,5 +1,6 @@
 const { Project, 
-        ProjectTag, 
+        ProjectTag,
+        Multimedia, 
         Sequelize, 
         sequelize } = require("../database");
 const ProjectModel = require('./project-validator')
@@ -9,17 +10,23 @@ async function getStatus() {
 }
 
 async function createProject(project) {
-  let id = 0;
   const location = {
     type: 'Point',
     coordinates: [project.location.lng, project.location.lat]
   }
   project['location'] = location;
   let result = await Project.create(project);
-  if (result && project.tags && project.tags.length > 0){
-    id = result.dataValues.id
-    await ProjectTag.destroy({ where: { projectid : id } });
+  if (!result) return 0;
+  const id = result.dataValues.id
+  if (project.tags && project.tags.length > 0){
+    //await ProjectTag.destroy({ where: { projectid : id } });
     if (!await projectAddTags(id, project.tags)){
+      deleteProject(id);
+      return 0;
+    }
+  }
+  if (project.multimedia && project.multimedia.length > 0){
+    if (!await projectAddMultimedia(id, project.multimedia)){
       deleteProject(id);
       return 0;
     }
@@ -28,9 +35,20 @@ async function createProject(project) {
 }
 
 async function getAllProjectsResume(params) {
-  const searchParams = { 'include': [],
-                         'attributes': ProjectModel.attributes.resume }
   
+  const searchParams = { 'include': [],
+                         'attributes': ProjectModel.attributes.resume,
+                         'raw': true }
+  
+  //Search for first multimedia
+  searchParams['include'].push({
+    'model': Multimedia,
+    'attributes': ['url'],
+    'where': {
+      position: 1 //First one
+    }, // Set key
+    required: false
+  })
   if (params.filters){
     searchParams['where'] = []
     Object.entries(params.filters).forEach(a => {
@@ -61,33 +79,49 @@ async function getAllProjectsResume(params) {
     searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
-
-  return await Project.findAll(searchParams)
+  const result = await Project.findAll(searchParams)
+  
+  return result.map(o => {
+    delete Object.assign(o, {['icon']: o['Multimedia.url'] })['Multimedia.url']
+    return o
+  })
 }
+
 
 async function getProject(id, perm){
-  const tags = await ProjectTag.findAll({ attributes: ['tag'], where: { projectid : id}})
-  let project = {};
-  if (perm){
-    project = await Project.findByPk(id, { attributes: ProjectModel.attributes.public });
-  } else {
-    project = await Project.findByPk(id, { attributes: ProjectModel.attributes.publicPrivate });
-  }
-  if (!project) return project;
-  project.dataValues['tags'] = [];
-  tags.forEach(entry => { project.dataValues['tags'].push(entry.dataValues.tag) });
-  return project;
+
+  const include = [
+    {
+      'model': Multimedia,
+      'attributes': ['url'],
+      required: false
+    },
+    {
+      'model': ProjectTag,
+      'attributes': ['tag'],
+      required: false
+    }
+  ]
+  const searchParams = { include,
+                         'attributes': ProjectModel.attributes.public,
+                        }
+  
+  if (perm) searchParams['attributes'] = ProjectModel.attributes.publicPrivate
+
+  const result = (await Project.findByPk(id, searchParams)).toJSON()
+  console.log(result)
+  result.Multimedia = result.Multimedia.map(m => m.url)
+  result['tags'] = result.ProjectTags.map(t => t.tag)
+  delete result['ProjectTags']
+
+  return result
 }
+
 
 async function deleteProject(id){
   await ProjectTag.destroy({ where: { projectid : id } });
+  await Multimedia.destroy({ where: { projectid : id } });
   return await Project.destroy({ where: { id } });
-}
-
-async function projectAddTags(projectid, tags){
-  let newTags = [];
-  tags.forEach(tag => newTags.push({ projectid, tag }))
-  return await ProjectTag.bulkCreate(newTags, { returning: true })
 }
 
 async function updateProject(id, newData) {
@@ -97,7 +131,29 @@ async function updateProject(id, newData) {
     await ProjectTag.destroy({ where: { projectid : id } });
     if (!await projectAddTags(id, newData.tags)) return 0;
   }
+  if (newData.multimedia && newData.multimedia.length > 0){
+    await Multimedia.destroy({ where: { projectid : id } });
+    if (!await projectAddMultimedia(id, newData.multimedia)) return 0;
+  }
   return response[0] ? getProject(id) : 0;
+}
+
+
+async function projectAddTags(projectid, tags){
+  let newTags = [];
+  tags.forEach(tag => newTags.push({ projectid, tag }))
+  return await ProjectTag.bulkCreate(newTags, { returning: true })
+}
+
+async function projectAddMultimedia(projectid, multimedia){
+  let newMultimedia = [];
+  let pos = 1;
+  multimedia.forEach(url => {
+    newMultimedia.push({ projectid, position: pos, url })
+    pos += 1;
+  })
+  console.log(newMultimedia)
+  return await Multimedia.bulkCreate(newMultimedia, { returning: true })
 }
 
 
