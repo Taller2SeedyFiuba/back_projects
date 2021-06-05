@@ -21,11 +21,13 @@ function listProjectValidator(parameters){
     stage: validator.attSchema['stage'],
     type: validator.attSchema['type'],
     tags: validator.attSchema['tags'],
-    location: locationSchema
+    location: locationSchema 
   }).options({ abortEarly: false });
 
   const querySchema = Joi.object({
-    filters: filterSchema
+    filters: filterSchema,
+    limit: Joi.number().integer(),
+    page: Joi.number().integer()
   }).options({ abortEarly: false });
   
   return querySchema.validate(parameters);
@@ -33,19 +35,21 @@ function listProjectValidator(parameters){
 
 async function listProjects(req, res) {
   const projectAvailableColumns = ['id', 'ownerid', 'stage', 'type', 'tags']
-  const { lng, lat, dist } = req.query;
+  const { lng, lat, dist, limit, page } = req.query;
   //Construimos el espacio de busqueda de la BD
-  let dbParams = {}
+  let dbParams = { limit, page }
 
   if (lng || lat || dist){
     dbParams.filters = {'location' : { lng, lat, dist }}
   }
+  
   Object.entries(req.query).forEach(param => {
     if (projectAvailableColumns.includes(param[0])){
       if (!dbParams.filters) dbParams.filters = {} 
       dbParams.filters[param[0]] = param[1]
     }
   })
+  
   if (dbParams.filters && 
       dbParams.filters.tags && 
       typeof dbParams.filters.tags != 'object'){

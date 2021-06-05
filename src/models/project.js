@@ -38,6 +38,8 @@ async function getAllProjectsResume(params) {
   
   const searchParams = { 'include': [],
                          'attributes': ProjectModel.attributes.resume,
+                         'limit': params.limit || 10,
+                         'offset': (params.page - 1) * params.limit || 0,
                          'raw': true }
   
   //Search for first multimedia
@@ -75,13 +77,12 @@ async function getAllProjectsResume(params) {
     const dist = params.filters.location.dist
     const location = sequelize.literal(`ST_GeomFromText('POINT(${lng} ${lat})')`);
     const distance = sequelize.fn('ST_DistanceSphere', sequelize.col('location'), location);
-    searchParams.order = distance
+    searchParams.order = distance * 1000  //Sequelize measures distance in meters
     searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
-  const result = await Project.findAll(searchParams)
-  
-  return result.map(o => {
+  const result = await Project.findAndCountAll(searchParams)
+  return result['rows'].map(o => {
     delete Object.assign(o, {['icon']: o['Multimedia.url'] })['Multimedia.url']
     return o
   })
