@@ -12,21 +12,17 @@ Project.enums = { type, stage }
 const attributes = {}
 
 attributes.resume = ['id', 'ownerid', 'title'];
-attributes.editable = ['title', 'description'];
-attributes.private = []  //Agregar en caso de que sea necesario
 attributes.public = [ 'ownerid',
                       'id',
                       'title', 
                       'description',
                       'type',
                       'stage',
-                      //'location',
                       'creationdate',
                       'finishdate',
                       'sponsorshipagreement',
-                      'seeragreement' ]
-
-attributes.publicPrivate = attributes.public.concat(attributes.private)
+                      'seeragreement',
+                      'location' ]
 
 Project.attributes = attributes;
 

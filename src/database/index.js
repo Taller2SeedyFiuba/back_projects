@@ -36,4 +36,8 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+db.getStatus = async function getStatus() {
+  return sequelize.authenticate();
+}
+
 module.exports = db;

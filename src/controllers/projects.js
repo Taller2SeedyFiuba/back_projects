@@ -67,10 +67,9 @@ async function listProjects(req, res) {
 
 async function getProject(req, res) {
   const { id } = req.params;
-  const { perm } = req.query;
   const isNumber = /^\d+$/.test(id);
   if (!isNumber) throw ApiError.badRequest("id must be an integer")
-  const project = await Project.getProject(id, perm);
+  const project = await Project.getProject(id);
   if (!project) throw ApiError.notFound("Project not found");
   
   return res.status(200).json({
@@ -86,9 +85,7 @@ async function createProject(req, res) {
   const { error } = validator.validateNew(req.body);
   if (error) throw ApiError.badRequest(error.message);
 
-  //TODO:
-  //Comunicacion con el servicio de usuarios para ver si existe el usuario.
-  //Quizas en el futuro no haya que filtrar el id del usuario, eso se vera
+  //Validate owner existance
   await proxy.validateUserExistance(ownerid)
   //Create the project
   const newProject = await Project.createProject(req.body);
@@ -118,7 +115,7 @@ async function deleteProject(req, res) {
 
 async function updateProject(req, res) {
   const { id } = req.params;
-  const { root } = req.query;
+  //const { root } = req.query;
   //Check if id is valid
   const isNumber = /^\d+$/.test(id);
   if (!isNumber) throw ApiError.badRequest("id must be an integer")
@@ -126,10 +123,10 @@ async function updateProject(req, res) {
   const projectToUpdate = await Project.getProject(id);
   if (!projectToUpdate) throw ApiError.notFound("Project not found")
   //Check parameters update pemissions.
-  const ableToEdit = validator.validateEditionPermissions(req.body, root);
-  if (!ableToEdit) throw ApiError.forbidden("You don't have permissions to edit those attributes");
+  //const ableToEdit = validator.validateEditionPermissions(req.body, root);
+  //if (!ableToEdit) throw ApiError.forbidden("You don't have permissions to edit those attributes");
   //Check if new data is valid.
-  const { error } = validator.validateEdition(req.body, root);
+  const { error } = validator.validateEdition(req.body);
   if (error) throw ApiError.badRequest(error.message);
   //Update the project
   const projectUpdated = await Project.updateProject(id, req.body);

@@ -5,10 +5,6 @@ const { Project,
         sequelize } = require("../database");
 const ProjectModel = require('./project-validator')
 
-async function getStatus() {
-    return sequelize.authenticate();
-}
-
 async function createProject(project) {
   const location = {
     type: 'Point',
@@ -89,7 +85,7 @@ async function getAllProjectsResume(params) {
 }
 
 
-async function getProject(id, perm){
+async function getProject(id){
 
   const include = [
     {
@@ -103,17 +99,19 @@ async function getProject(id, perm){
       required: false
     }
   ]
-  const searchParams = { include,
-                         'attributes': ProjectModel.attributes.public,
-                        }
+  const searchParams = { include }
   
-  if (perm) searchParams['attributes'] = ProjectModel.attributes.publicPrivate
+  searchParams['attributes'] = ProjectModel.attributes.public
 
   const result = (await Project.findByPk(id, searchParams)).toJSON()
-  console.log(result)
+  
   result.Multimedia = result.Multimedia.map(m => m.url)
   result['tags'] = result.ProjectTags.map(t => t.tag)
   delete result['ProjectTags']
+  result.location = {
+    'lat': result.location.coordinates[1],
+    'lng': result.location.coordinates[0]
+  }
 
   return result
 }
@@ -159,8 +157,7 @@ async function projectAddMultimedia(projectid, multimedia){
 
 
 
-module.exports = {  getStatus,
-                    getProject,
+module.exports = {  getProject,
                     getAllProjectsResume,
                     createProject,
                     updateProject,
