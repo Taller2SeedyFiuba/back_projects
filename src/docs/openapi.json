@@ -1,0 +1,467 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "SeedyFiuba Projects Service"
+  },
+  "tags": [
+    {
+      "name": "projects",
+      "description": "Everything about projects"
+    }
+  ],
+  "paths": {
+    "/api/search": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Search for all projects matching given conditions.",
+        "operationId": "searchProject",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ownerid",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Numeric ID of the project to get"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type of the project to get"
+          },
+          {
+            "in": "query",
+            "name": "stage",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Stage of the project to get"
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Tags of the project to get",
+            "example": [
+              "ArbolesParaChaco",
+              "ChacoVive"
+            ]
+          },
+          {
+            "in": "query",
+            "name": "lng",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Longitude at which distance should be calculated"
+          },
+          {
+            "in": "query",
+            "name": "lat",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Longitude at which distance should be calculated"
+          },
+          {
+            "in": "query",
+            "name": "dist",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Distance from given latitude and longitud of the project to get in kilometers"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Maximum number of projects to retrieve"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number of projects result to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 5
+                      },
+                      "ownerid": {
+                        "type": "string",
+                        "example": "05yseyhiEWPNvkYYbdHL77dHKWi1"
+                      },
+                      "title": {
+                        "type": "string",
+                        "example": "10000 Arboles para Chaco"
+                      },
+                      "icon": {
+                        "type": "string",
+                        "example": "daoiacpoa12mcahw21hd72ja"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The specified query parameters are invalid."
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
+    },
+    "/api/view/{id}": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Returns project information",
+        "description": "Returns full information of the project with given id.",
+        "operationId": "viewProject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Numeric ID of the project to get"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The specified project ID is invalid (not a number)."
+          },
+          "404": {
+            "description": "A user with the specified ID was not found."
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
+    },
+    "/api": {
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Create project",
+        "description": "This can only be done by the logged in user.",
+        "operationId": "createProject",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ProjectBody"
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The specified project body information is not valid"
+          },
+          "404": {
+            "description": "A user with de specified ID (owneruserid) was not found"
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
+    },
+    "/api/{id}": {
+      "put": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Update project",
+        "description": "This can only be done by the owner user.",
+        "operationId": "updateProject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Numeric ID of the project to modify"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/ProjectBody"
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The specified project body information or id is not valid."
+          },
+          "404": {
+            "description": "A project with de specified ID was not found"
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Delete project",
+        "description": "This can only be done by the owner user.",
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Numeric ID of the project to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The specified project id is not valid."
+          },
+          "404": {
+            "description": "A project with de specified ID was not found"
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 5
+          },
+          "ownerid": {
+            "type": "string",
+            "example": "05yseyhiEWPNvkYYbdHL77dHKWi1"
+          },
+          "title": {
+            "type": "string",
+            "example": "10000 Arboles para Chaco"
+          },
+          "description": {
+            "type": "string",
+            "example": "Este proyecto busca fondos para crear una obra de arte en Chaco"
+          },
+          "type": {
+            "type": "string",
+            "example": "art"
+          },
+          "stage": {
+            "type": "string",
+            "example": "funding"
+          },
+          "creationdate": {
+            "type": "string",
+            "example": "2021-03-14"
+          },
+          "finishdate": {
+            "type": "string",
+            "example": "2023-03-14"
+          },
+          "sponsorshipagreement": {
+            "type": "string",
+            "example": "Con su aporte de $5000 tendra derecho a que su nombre sea estampado en una placa junto a la obra"
+          },
+          "seeragreement": {
+            "type": "string",
+            "example": "Debera comprometerse a realizar viajes periodicos a Chaco"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number",
+                "example": 120
+              },
+              "lng": {
+                "type": "number",
+                "example": 40
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "ArbolesParaChaco",
+              "ChacoVerde",
+              "ChacoVive"
+            ]
+          },
+          "multimedia": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "daoiacpoa12mcahw21hd72ja",
+              "jad892of7632nds81ksd98jd",
+              "cs83a981ishaja8721odasa1"
+            ]
+          }
+        }
+      }
+    },
+    "requestBodies": {
+      "ProjectBody": {
+        "description": "A JSON object containing project information",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "10000 Arboles para Chaco"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Este proyecto busca fondos para crear una obra de arte en Chaco"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "art"
+                },
+                "finishdate": {
+                  "type": "string",
+                  "example": "2023-03-14"
+                },
+                "sponsorshipagreement": {
+                  "type": "string",
+                  "example": "Con su aporte de $5000 tendra derecho a que su nombre sea estampado en una placa junto a la obra"
+                },
+                "seeragreement": {
+                  "type": "string",
+                  "example": "Debera comprometerse a realizar viajes periodicos a Chaco"
+                },
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "lat": {
+                      "type": "number",
+                      "example": 120
+                    },
+                    "lng": {
+                      "type": "number",
+                      "example": 40
+                    }
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "ArbolesParaChaco",
+                    "ChacoVerde",
+                    "ChacoVive"
+                  ]
+                },
+                "multimedia": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "daoiacpoa12mcahw21hd72ja",
+                    "jad892of7632nds81ksd98jd",
+                    "cs83a981ishaja8721odasa1"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}

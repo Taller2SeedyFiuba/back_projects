@@ -12,21 +12,17 @@ Project.enums = { type, stage }
 const attributes = {}
 
 attributes.resume = ['id', 'ownerid', 'title'];
-attributes.editable = ['title', 'description'];
-attributes.private = []  //Agregar en caso de que sea necesario
 attributes.public = [ 'ownerid',
                       'id',
                       'title', 
                       'description',
                       'type',
                       'stage',
-                      //'location',
                       'creationdate',
                       'finishdate',
                       'sponsorshipagreement',
-                      'seeragreement' ]
-
-attributes.publicPrivate = attributes.public.concat(attributes.private)
+                      'seeragreement',
+                      'location' ]
 
 Project.attributes = attributes;
 
@@ -41,6 +37,7 @@ Project.attSchema['finishdate'] = Joi.date()
 Project.attSchema['sponsorshipagreement'] = Joi.string().min(5)
 Project.attSchema['seeragreement'] = Joi.string().min(5)
 Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30))
+Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
 Project.attSchema['location'] = Joi.object({
   'lat': Joi.number().required(),
   'lng': Joi.number().required()
@@ -58,6 +55,7 @@ Project.validateNew = function (project){
     sponsorshipagreement: this.attSchema['sponsorshipagreement'].required(),
     seeragreement: this.attSchema['seeragreement'].required(),
     location: this.attSchema['location'].required(),
+    multimedia: this.attSchema['multimedia'],
     tags: this.attSchema['tags']
   }).options({ abortEarly: false });
   
@@ -84,6 +82,7 @@ Project.validateEdition = function (project){
     finishdate: this.attSchema['finishdate'],
     sponsorshipagreement: this.attSchema['sponsorshipagreement'],
     seeragreement: this.attSchema['seeragreement'],
+    multimedia: this.attSchema['multimedia'],
     tags: this.attSchema['tags'],
   }).options({ abortEarly: false });
   

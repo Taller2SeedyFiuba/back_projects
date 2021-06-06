@@ -32,6 +32,17 @@ CREATE TABLE projectTag(
 ALTER TABLE projectTag ADD CONSTRAINT pk_projecttag PRIMARY KEY(projectid, tag);
 ALTER TABLE projectTag ADD CONSTRAINT fk_projecttag FOREIGN KEY(projectid) REFERENCES projects ON DELETE CASCADE;
 
+DROP TABLE IF EXISTS multimedia;
+
+CREATE TABLE multimedia(
+	projectid INTEGER NOT NULL,
+	position INTEGER NOT NULL,
+	url VARCHAR(255) NOT NULL CHECK (url <> '')
+);
+
+ALTER TABLE multimedia ADD CONSTRAINT pk_multimedia PRIMARY KEY(projectid, position);
+ALTER TABLE multimedia ADD CONSTRAINT fk_multimedia FOREIGN KEY(projectid) REFERENCES projects ON DELETE CASCADE;
+
 
 
 

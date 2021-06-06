@@ -63,6 +63,7 @@ module.exports = (sequelize, DataTypes) => {
   
   Project.associate = function (models) {
     models.Project.hasMany(models.ProjectTag, {foreignKey: 'projectid'})
+    models.Project.hasMany(models.Multimedia, {foreignKey: 'projectid'})
   }
 
   return Project;

@@ -1,7 +1,7 @@
 const ProjectModel = require('../project-validator')
 
-const attributes_resume = ProjectModel.attributes.resume
-const public_attributes = ProjectModel.attributes.public.concat('tags')
+const attributes_resume = ProjectModel.attributes.resume.concat('icon').concat('multimedia')
+const public_attributes = ProjectModel.attributes.public.concat('tags').concat('multimedia')
 
 
 const projects = [{
@@ -10,11 +10,17 @@ const projects = [{
   "title": "Test title 1",
   "description": "Test description 1",
   "type": "art",
+  "stage": "funding",
   "finishdate": "2021-09-10",
   "creationdate": "2020-03-03",
   "sponsorshipagreement": "Test sponsorship agreement",
   "seeragreement": "Test seer agreement",
-  "tags": ["test1tag1", "test1tag2"]
+  "location": {
+    "lat": 120,
+    "lng": 100
+  },
+  "tags": ["test1tag1", "test1tag2"],
+  "multimedia": ["image1", "image2"]
 }]
 
 
@@ -39,18 +45,26 @@ const getProject = async(id, perm) => {
 
 const getAllProjectsResume = async(searchParams) => {
   //Devuelvo siempre todo, no creo que tenga sentido implementar un filtrado.
-  return projects.map(project => pick(project, attributes_resume))
+  
+  return projects.map(project => {
+    const res = pick(project, attributes_resume)
+    if (!res.multimedia || !res.multimedia[0]) return null;
+    res['icon'] = res.multimedia[0]
+    delete res['multimedia']
+    return res
+  })
 }
 
 const createProject = async(project) => {
   const creationdate = '2021-05-05'
   const id = projects.length + 1
+  const stage = 'funding'
   /*SI SE QUIERE MODIFICAR LA BASE -> TESTS DE INTEGRACION
   projects.push({id,
                  ...project,
                  ...creationdate})
   */
-  return Object.assign(pick(project, public_attributes), {id, creationdate})
+  return Object.assign(pick(project, public_attributes), {id, creationdate, stage})
 }
 
 const updateProject = async(id, newData) => {
