@@ -103,8 +103,9 @@ async function getProject(id){
   
   searchParams['attributes'] = ProjectModel.attributes.public
 
-  const result = (await Project.findByPk(id, searchParams)).toJSON()
-  
+  let result = await Project.findByPk(id, searchParams)
+  if (!result) return null;
+  result = result.toJSON()
   result.Multimedia = result.Multimedia.map(m => m.url)
   result['tags'] = result.ProjectTags.map(t => t.tag)
   delete result['ProjectTags']
