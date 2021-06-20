@@ -6,19 +6,16 @@ services:
             - ./src:/app/src
         container_name: project-service
         restart: always
-        environment:
-            - PORT=8082
-            - DATABASE_URL=postgres://postgres:postgres@psql-projects:5432/postgres
-            - ENV=development
+        env_file:
+            - .env
         networks:
             - default
             - project-net
         ports:
-            - 8082:8082
+            - ${PORT}:${PORT}
         depends_on:
             psql-projects:
                 condition: service_healthy
-        command: npm run dev
         
     psql-projects:
         image: postgis/postgis

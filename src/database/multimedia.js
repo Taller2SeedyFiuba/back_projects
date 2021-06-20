@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       url: {
         type: DataTypes.CHAR(255),
         primaryKey: false,
-      }     
+      }
       }, {
         tableName: 'multimedia',
         timestamps: false,
