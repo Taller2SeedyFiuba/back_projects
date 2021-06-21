@@ -1,7 +1,6 @@
 const { ApiError } = require("../errors/ApiError");
 const Project = require("../models/projects")
 const validator = require("../models/project-validator")
-const proxy = require("../proxy/proxy")
 const Joi = require("joi")
 
 
@@ -16,6 +15,7 @@ function listProjectValidator(parameters){
   }).options({ abortEarly: false });
 
   const filterSchema = Joi.object({
+    id: Joi.array().items(validator.attSchema['id']),
     ownerid: validator.attSchema['ownerid'],
     state: validator.attSchema['state'],
     type: validator.attSchema['type'],
@@ -32,29 +32,46 @@ function listProjectValidator(parameters){
   return querySchema.validate(parameters);
 }
 
-async function listProjects(req, res) {
-  const projectAvailableFilters = ['ownerid', 'state', 'type', 'tags']
-  const { lng, lat, dist, limit, page } = req.query;
-  //Construimos el espacio de busqueda de la BD
-  let dbParams = { limit, page }
-
-  if (lng || lat || dist){
-    dbParams.filters = {'location' : { lng, lat, dist }}
+function formatDatabseSearch(data){
+  const toArray = input => {
+    if (Array.isArray(input)) return input
+    return [input]
+  }
+  //Nota: Queremos permitir ciertos campos que puedan ser falsy y no necesariamente undefined.
+  let dbParams = {
+    filters: {
+      id: (data.id != undefined) ? toArray(data.id).map(x => parseInt(x)) : undefined,
+      type: data.type,
+      ownerid: data.ownerid,
+      state: data.state,
+      tags: (data.tags != undefined) ? toArray(data.tags) : undefined,
+      location: (data.lat == undefined) ? undefined : {
+        lat: data.lat,
+        lng: data.lng,
+        dist: data.dist
+      }
+    },
+    limit: data.limit,
+    page: data.page
   }
 
-  Object.entries(req.query).forEach(param => {
-    if (projectAvailableFilters.includes(param[0])){
-      if (!dbParams.filters) dbParams.filters = {}
-      dbParams.filters[param[0]] = param[1]
+  let deleteFilters = true
+  Object.entries(dbParams.filters).forEach(att => {
+    if (att[1] == undefined){
+      delete dbParams.filters[att[0]]
+    } else{
+      deleteFilters = false
     }
   })
+  if (deleteFilters)
+    delete dbParams['filters']
 
-  if (dbParams.filters &&
-      dbParams.filters.tags &&
-      typeof dbParams.filters.tags != 'object'){
-    dbParams.filters.tags = [ dbParams.filters.tags ]
-  }
+  return dbParams
+}
 
+async function listProjects(req, res) {
+
+  const dbParams = formatDatabseSearch(req.query)
   const { error } = listProjectValidator(dbParams);
   if (error) throw ApiError.badRequest(error.message);
   const projects = await Project.getAllProjectsResume(dbParams);
@@ -66,14 +83,23 @@ async function listProjects(req, res) {
 
 async function getProject(req, res) {
   const { id } = req.params;
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   const project = await Project.getProject(id);
   if (!project) throw ApiError.notFound("Project not found");
 
   return res.status(200).json({
     status: "success",
     data: project
+  });
+}
+
+async function projectExists(req, res) {
+  const { id } = req.params;
+
+  const exists = await Project.projectExists(id);
+
+  return res.status(200).json({
+    status: "success",
+    data: exists
   });
 }
 
@@ -134,6 +160,7 @@ async function updateProject(req, res) {
 module.exports = {
   listProjects,
   getProject,
+  projectExists,
   createProject,
   deleteProject,
   updateProject

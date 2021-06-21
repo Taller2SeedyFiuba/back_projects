@@ -4,9 +4,6 @@ const { Project,
 const ProjectTags = require("./project-tag")
 const Multimedia = require("./multimedia")
 const Stages = require("./stages")
-const { attSchema,
-        validateNew,
-        validateEdition} = require('./project-validator')
 
 async function createProject(project) {
 
@@ -49,7 +46,6 @@ async function getAllProjectsResume(params) {
                          'limit': params.limit || 10,
                          'offset': (params.page - 1) * params.limit || 0,
                          'raw': true }
-
   //Search for first multimedia
   searchParams.include.push({
     'model': Multimedia.getModel(),
@@ -60,17 +56,17 @@ async function getAllProjectsResume(params) {
     required: false
   })
   if (params.filters){
-    searchParams.where = []
+    searchParams.where = [{}]
     Object.entries(params.filters).forEach(a => {
       if (a[0] != 'tags' && a[0] != 'location'){
-        searchParams.where.push(sequelize.where(sequelize.col(a[0]), Sequelize.Op.eq, a[1]))
+        searchParams.where[0][a[0]] = a[1]
       }
     })
   }
 
   if (params.filters && params.filters.tags){
     searchParams.include.push({
-      'model': ProjectTag.getModel(),
+      'model': ProjectTags.getModel(),
       'attributes': [],
       'where': {
         tag: params.filters.tags
@@ -89,10 +85,9 @@ async function getAllProjectsResume(params) {
     searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
-  console.log(searchParams)
   const result = await Project.findAndCountAll(searchParams)
 
-  result['rows'].map(project => {
+  result.rows = result.rows.map(project => {
 
     project.icon = project['Multimedia.url']
     if (project.distance) project.distance /= 1000;//Sequelize measures distance in meters
@@ -160,6 +155,9 @@ async function getProject(id){
   return result
 }
 
+async function projectExists(id){
+  return await Project.findByPk(id) ? true : false
+}
 
 async function deleteProject(id){
   await ProjectTag.projectDeleteTags(id);
@@ -184,6 +182,7 @@ async function updateProject(id, newData) {
 module.exports = {
   getProject,
   getAllProjectsResume,
+  projectExists,
   createProject,
   updateProject,
   deleteProject
