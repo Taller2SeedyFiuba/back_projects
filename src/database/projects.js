@@ -137,24 +137,3 @@ module.exports = (sequelize, DataTypes) => {
 
   return Project;
 };
-
-/* Cosas que pueden querer modificarse
-
-description
-actualstate
-
-metrics: {
-  fundedamount,
-  favouritescount,
-  sponsorscount
-}
-
-IDEA 1:
-
-Dar soporte a traves de un PATCH a que se modifiquen estos parametros realizando un minimo chequeo.
-Desde la API Gateway habra que manejar tema de permisos a quienes editan estos parametros.
-Solo el dueño podra editar la descripcion
-Solo un veedor podra cambiar el estado (esto en realidad se dispararia a traves del servicio de veedores).
-Solo el servicio de sponsors podra cambiar las demas metricas.
-
-*/

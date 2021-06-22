@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { Project: ProjectModel } = require("../database");
+const { Project: ProjectModel } = require("../database/index");
 
 Project = {
   attSchema: {}

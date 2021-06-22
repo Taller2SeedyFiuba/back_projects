@@ -25,8 +25,8 @@ function listProjectValidator(parameters){
 
   const querySchema = Joi.object({
     filters: filterSchema,
-    limit: Joi.number().integer(),
-    page: Joi.number().integer()
+    limit: Joi.number().integer().positive(),
+    page: Joi.number().integer().positive()
   }).options({ abortEarly: false });
 
   return querySchema.validate(parameters);
@@ -120,12 +120,9 @@ async function createProject(req, res) {
 
 async function deleteProject(req, res) {
   const { id } = req.params;
-  //Check if the id is valid
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   //Check if there is a project with that id
   const ProjectInDatabase = await Project.getProject(id);
-  if (!ProjectInDatabase) throw ApiError.notFound("Project do not exists")
+  if (!ProjectInDatabase) throw ApiError.notFound("Project does not exist")
 
   const projectDeleted = await Project.deleteProject(id)
   if (!projectDeleted) throw ApiError.serverError("Server error")
@@ -137,9 +134,6 @@ async function deleteProject(req, res) {
 
 async function updateProject(req, res) {
   const { id } = req.params;
-  //Check if id is valid
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   //Check project existance
   const projectToUpdate = await Project.getProject(id);
   if (!projectToUpdate) throw ApiError.notFound("Project not found")

@@ -1,4 +1,4 @@
-const { 
+const {
     listProjects,
     getProject,
     createProject,
@@ -6,8 +6,15 @@ const {
     updateProject
   } = require('./projects');
 
-jest.mock('../models/project');
-jest.mock('../proxy/proxy')
+jest.mock('../models/projects');
+jest.mock('../database/index');
+
+const {
+  project,
+  projectResume,
+  createdProject
+} = require('../models/__mocks__/projects')
+
 
 const mockResponse = () => {
   const res = {};
@@ -26,24 +33,7 @@ test('/getProject successful response', async () => {
   const resObj = {
     data: {
       status: 'success',
-      data: {
-        "id": "1",
-        "ownerid": "userid1",
-        "title": "Test title 1",
-        "description": "Test description 1",
-        "type": "art",
-        "stage": "funding",
-        "finishdate": "2021-09-10",
-        "creationdate": "2020-03-03",
-        "sponsorshipagreement": "Test sponsorship agreement",
-        "seeragreement": "Test seer agreement",
-        "location": {
-          "lat": 120,
-          "lng": 100
-        },
-        "tags": ["test1tag1", "test1tag2"],
-        "multimedia": ["image1", "image2"]
-      }
+      data: project
     }
   };
 
@@ -55,6 +45,8 @@ test('/getProject successful response', async () => {
   expect(res.json).toHaveBeenCalledWith(resObj.data);
 });
 
+
+
 test('/listProjects successful response', async () => {
   const req = {
     query: {}
@@ -64,12 +56,7 @@ test('/listProjects successful response', async () => {
     data: {
       status: 'success',
       data: [
-        {
-          "id": "1",
-          "ownerid": "userid1",
-          "title": "Test title 1",
-          "icon": "image1"
-        }
+        projectResume
       ]
     }
   };
@@ -83,47 +70,38 @@ test('/listProjects successful response', async () => {
 });
 
 test('/createProject successful response', async () => {
+  //No importa que data le pasemos, mientras no sea data que deba generar la base
+  const sendProject = {
+    "ownerid": "userid2",
+    "title": "Test title 2",
+    "description": "Test description 2",
+    "type": "arte",
+    "location": {
+      "description": "Location description",
+      "lat": 120,
+      "lng": 100
+    },
+    "stages": [
+      {
+        "title": "Test stage title",
+        "description": "Test stage description",
+        "amount": 1000
+      }
+    ],
+    "tags": ["test1tag1", "test1tag2"],
+    "multimedia": ["image1", "image2"],
+  }
+
   const req = {
-    body: {
-      "ownerid": "userid2",
-      "title": "Test title 2",
-      "description": "Test description 2",
-      "type": "software",
-      "finishdate": "2021-08-11",
-      "sponsorshipagreement": "Test sponsorship agreement 2",
-      "seeragreement": "Test seer agreement 2",
-      "location": {
-        'lat': 120,
-        'lng': 30
-      },
-      "tags": ["test2tag1", "test2tag2"],
-      "multimedia": ["imageUrl1", "imageUrl2", "imageUrl3"]
-    }
+    body: sendProject
   }
 
   const resObj = {
     data: {
       status: 'success',
-      data: {
-        "id": 2,
-        "ownerid": "userid2",
-        "title": "Test title 2",
-        "description": "Test description 2",
-        "type": "software",
-        "stage": "funding",
-        "creationdate": "2021-05-05",
-        "finishdate": "2021-08-11",
-        "sponsorshipagreement": "Test sponsorship agreement 2",
-        "seeragreement": "Test seer agreement 2",
-        "location": {
-          "lat": 120,
-          "lng": 30
-        },
-        "tags": ["test2tag1", "test2tag2"],
-        "multimedia": ["imageUrl1", "imageUrl2", "imageUrl3"]
-      }
+      data: {...sendProject, ...createdProject}
     }
-  };
+  }
 
   const res = mockResponse();
 
@@ -143,24 +121,7 @@ test('/deleteProject successful response', async () => {
   const resObj = {
     data: {
       status: 'success',
-      data: {
-        "id": "1",
-        "ownerid": "userid1",
-        "title": "Test title 1",
-        "description": "Test description 1",
-        "type": "art",
-        "stage": "funding",
-        "finishdate": "2021-09-10",
-        "creationdate": "2020-03-03",
-        "sponsorshipagreement": "Test sponsorship agreement",
-        "seeragreement": "Test seer agreement",
-        "tags": ["test1tag1", "test1tag2"],
-        "multimedia": ["image1", "image2"],
-        "location": {
-          "lat": 120,
-          "lng": 100
-        },
-      }
+      data: project,
     }
   };
 
@@ -179,10 +140,7 @@ test('/updateProject successful response', async () => {
     },
     query: {},
     body: {
-      "title": "Test title 1 modified",
       "description": "Test description 1 modified",
-      "tags": ["test1tag1modified", "test1tag2"],
-      "multimedia": ["editImage1"]
     }
   }
 
@@ -190,22 +148,8 @@ test('/updateProject successful response', async () => {
     data: {
       status: 'success',
       data: {
-        "id": "1",
-        "ownerid": "userid1",
-        "title": "Test title 1 modified",
-        "description": "Test description 1 modified",
-        "type": "art",
-        "stage": "funding",
-        "finishdate": "2021-09-10",
-        "creationdate": "2020-03-03",
-        "sponsorshipagreement": "Test sponsorship agreement",
-        "seeragreement": "Test seer agreement",
-        "location": {
-          "lat": 120,
-          "lng": 100
-        },
-        "tags": ["test1tag1modified", "test1tag2"],
-        "multimedia": ["editImage1"]
+        ...project,
+        'description': "Test description 1 modified"
       }
     }
   };
@@ -217,3 +161,5 @@ test('/updateProject successful response', async () => {
   expect(res.status).toHaveBeenCalledWith(200);
   expect(res.json).toHaveBeenCalledWith(resObj.data);
 });
+
+
