@@ -2,8 +2,30 @@ SET SEARCH_PATH TO 'public';
 
 -- CREATE EXTENSION postgis;
 
-CREATE TYPE PROJECT_TYPE AS ENUM ('software', 'electronics', 'art');
-CREATE TYPE PROJECT_STAGE AS ENUM ('funding', 'finished', 'cancelled');
+CREATE TYPE PROJECT_TYPE AS ENUM (
+	'comida', 
+	'arte', 
+	'periodismo',
+	'manualidades',
+	'música',
+	'danza',
+	'fotografía',
+	'diseño',
+	'publicaciones',
+	'tecnología',
+	'software',
+	'refugio',
+	'transporte',
+	'legal'
+);
+
+CREATE TYPE PROJECT_STATE AS ENUM (
+	'on_review', 
+	'funding', 
+	'canceled', 
+	'in_progress', 
+	'completed'
+);
 
 DROP TABLE IF EXISTS projects;
 
@@ -13,19 +35,20 @@ CREATE TABLE projects(
 	title VARCHAR(80) NOT NULL CHECK (title <> ''),
 	description TEXT NOT NULL CHECK (description <> ''),
 	type PROJECT_TYPE NOT NULL,
-	stage PROJECT_STAGE NOT NULL DEFAULT 'funding',
+	state PROJECT_STATE NOT NULL DEFAULT 'on_review',
+	actualstage INTEGER NOT NULL DEFAULT 0,
 	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	finishdate TIMESTAMP NOT NULL,
-	sponsorshipagreement TEXT NOT NULL CHECK (sponsorshipagreement <> ''),
-	seeragreement TEXT NOT NULL CHECK (seeragreement <> ''),
-	location GEOMETRY
-	
+	location GEOMETRY,
+	locationdescription VARCHAR(80) NOT NULL CHECK (locationdescription <> ''),
+	sponsorscount INTEGER NOT NULL DEFAULT 0,
+	favouritescount INTEGER NOT NULL DEFAULT 0,
+	fundedamount INTEGER NOT NULL CHECK (fundedamount >= 0) DEFAULT 0
 );
 
 DROP TABLE IF EXISTS projectTag;
 
 CREATE TABLE projectTag(
-	projectid INTEGER NOT NULL,
+	projectID INTEGER NOT NULL,
 	tag VARCHAR(30) NOT NULL CHECK (tag <> '')
 );
 
@@ -43,6 +66,18 @@ CREATE TABLE multimedia(
 ALTER TABLE multimedia ADD CONSTRAINT pk_multimedia PRIMARY KEY(projectid, position);
 ALTER TABLE multimedia ADD CONSTRAINT fk_multimedia FOREIGN KEY(projectid) REFERENCES projects ON DELETE CASCADE;
 
+DROP TABLE IF EXISTS stages;
+
+CREATE TABLE stages(
+	projectid INTEGER NOT NULL,
+	position INTEGER NOT NULL,
+	title VARCHAR(20) NOT NULL CHECK (title <> ''),
+	description VARCHAR(255) NOT NULL CHECK (description <> ''),
+	amount INTEGER NOT NULL CHECK (amount >= 0) DEFAULT 0
+);
+
+ALTER TABLE stages ADD CONSTRAINT pk_stages PRIMARY KEY(projectid, position);
+ALTER TABLE stages ADD CONSTRAINT fk_stages FOREIGN KEY(projectid) REFERENCES projects ON DELETE CASCADE;
 
 
 

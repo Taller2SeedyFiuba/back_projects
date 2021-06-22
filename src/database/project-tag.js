@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       tag: {
         type: DataTypes.CHAR(30),
         primaryKey: true,
-      }     
+      }
       }, {
         tableName: 'projecttag',
         timestamps: false,

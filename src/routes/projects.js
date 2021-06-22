@@ -4,12 +4,13 @@ const pc = require("../controllers/projects");
 
 router.get('/status', hocError(pc.getStatus))
 router.post('/', hocError(pc.createProject));
-router.get('/view/:id', hocError(pc.getProject));
+router.get('/:id([0-9]+)/exists', hocError(pc.projectExists))
+router.get('/:id([0-9]+)', hocError(pc.getProject));
 //Posible implementacion
 //router.put('/cancel/:id', use(pc.cancelProject.bind(pc)));
-router.put('/:id', hocError(pc.updateProject));
+router.patch('/:id([0-9]+)', hocError(pc.updateProject));
 router.get('/search', hocError(pc.listProjects));
-router.delete('/:id', hocError(pc.deleteProject));
+router.delete('/:id([0-9]+)', hocError(pc.deleteProject));
 
 
 module.exports = router;

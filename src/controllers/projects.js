@@ -1,11 +1,10 @@
 const { ApiError } = require("../errors/ApiError");
-const Project = require("../models/project")
+const Project = require("../models/projects")
 const validator = require("../models/project-validator")
-const proxy = require("../proxy/proxy")
 const Joi = require("joi")
 
 
-//Aux function 
+//Aux function
 
 function listProjectValidator(parameters){
 
@@ -16,46 +15,63 @@ function listProjectValidator(parameters){
   }).options({ abortEarly: false });
 
   const filterSchema = Joi.object({
-    id: validator.attSchema['id'],
+    id: Joi.array().items(validator.attSchema['id']),
     ownerid: validator.attSchema['ownerid'],
-    stage: validator.attSchema['stage'],
+    state: validator.attSchema['state'],
     type: validator.attSchema['type'],
     tags: validator.attSchema['tags'],
-    location: locationSchema 
+    location: locationSchema
   }).options({ abortEarly: false });
 
   const querySchema = Joi.object({
     filters: filterSchema,
-    limit: Joi.number().integer(),
-    page: Joi.number().integer()
+    limit: Joi.number().integer().positive(),
+    page: Joi.number().integer().positive()
   }).options({ abortEarly: false });
-  
+
   return querySchema.validate(parameters);
 }
 
-async function listProjects(req, res) {
-  const projectAvailableColumns = ['id', 'ownerid', 'stage', 'type', 'tags']
-  const { lng, lat, dist, limit, page } = req.query;
-  //Construimos el espacio de busqueda de la BD
-  let dbParams = { limit, page }
-
-  if (lng || lat || dist){
-    dbParams.filters = {'location' : { lng, lat, dist }}
+function formatDatabseSearch(data){
+  const toArray = input => {
+    if (Array.isArray(input)) return input
+    return [input]
   }
-  
-  Object.entries(req.query).forEach(param => {
-    if (projectAvailableColumns.includes(param[0])){
-      if (!dbParams.filters) dbParams.filters = {} 
-      dbParams.filters[param[0]] = param[1]
+  //Nota: Queremos permitir ciertos campos que puedan ser falsy y no necesariamente undefined.
+  let dbParams = {
+    filters: {
+      id: (data.id != undefined) ? toArray(data.id).map(x => parseInt(x)) : undefined,
+      type: data.type,
+      ownerid: data.ownerid,
+      state: data.state,
+      tags: (data.tags != undefined) ? toArray(data.tags) : undefined,
+      location: (data.lat == undefined) ? undefined : {
+        lat: data.lat,
+        lng: data.lng,
+        dist: data.dist
+      }
+    },
+    limit: data.limit,
+    page: data.page
+  }
+
+  let deleteFilters = true
+  Object.entries(dbParams.filters).forEach(att => {
+    if (att[1] == undefined){
+      delete dbParams.filters[att[0]]
+    } else{
+      deleteFilters = false
     }
   })
-  
-  if (dbParams.filters && 
-      dbParams.filters.tags && 
-      typeof dbParams.filters.tags != 'object'){
-    dbParams.filters.tags = [ dbParams.filters.tags ]
-  }
-  
+  if (deleteFilters)
+    delete dbParams['filters']
+
+  return dbParams
+}
+
+async function listProjects(req, res) {
+
+  const dbParams = formatDatabseSearch(req.query)
   const { error } = listProjectValidator(dbParams);
   if (error) throw ApiError.badRequest(error.message);
   const projects = await Project.getAllProjectsResume(dbParams);
@@ -67,26 +83,32 @@ async function listProjects(req, res) {
 
 async function getProject(req, res) {
   const { id } = req.params;
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   const project = await Project.getProject(id);
   if (!project) throw ApiError.notFound("Project not found");
-  
+
   return res.status(200).json({
     status: "success",
     data: project
   });
 }
 
+async function projectExists(req, res) {
+  const { id } = req.params;
+
+  const exists = await Project.projectExists(id);
+
+  return res.status(200).json({
+    status: "success",
+    data: exists
+  });
+}
+
 async function createProject(req, res) {
-  
-  const { ownerid } = req.body;
+
   //Validate project attributes
   const { error } = validator.validateNew(req.body);
   if (error) throw ApiError.badRequest(error.message);
 
-  //Validate owner existance
-  await proxy.validateUserExistance(ownerid)
   //Create the project
   const newProject = await Project.createProject(req.body);
   if (!newProject) throw ApiError.serverError("Internal error creating project");
@@ -98,12 +120,9 @@ async function createProject(req, res) {
 
 async function deleteProject(req, res) {
   const { id } = req.params;
-  //Check if the id is valid
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   //Check if there is a project with that id
   const ProjectInDatabase = await Project.getProject(id);
-  if (!ProjectInDatabase) throw ApiError.notFound("Project do not exists")
+  if (!ProjectInDatabase) throw ApiError.notFound("Project does not exist")
 
   const projectDeleted = await Project.deleteProject(id)
   if (!projectDeleted) throw ApiError.serverError("Server error")
@@ -115,23 +134,16 @@ async function deleteProject(req, res) {
 
 async function updateProject(req, res) {
   const { id } = req.params;
-  //const { root } = req.query;
-  //Check if id is valid
-  const isNumber = /^\d+$/.test(id);
-  if (!isNumber) throw ApiError.badRequest("id must be an integer")
   //Check project existance
   const projectToUpdate = await Project.getProject(id);
   if (!projectToUpdate) throw ApiError.notFound("Project not found")
-  //Check parameters update pemissions.
-  //const ableToEdit = validator.validateEditionPermissions(req.body, root);
-  //if (!ableToEdit) throw ApiError.forbidden("You don't have permissions to edit those attributes");
   //Check if new data is valid.
-  const { error } = validator.validateEdition(req.body);
+  const { error, data } = validator.validateAndFormatEdition(projectToUpdate, req.body);
   if (error) throw ApiError.badRequest(error.message);
   //Update the project
-  const projectUpdated = await Project.updateProject(id, req.body);
+  const projectUpdated = await Project.updateProject(id, data);
   if (!projectUpdated) throw ApiError.serverError("Server error")
-  //PENSAR: Vale la pena un request mas a la BD para devolver el proyecto final?
+
   return res.status(200).json({
     status: "success",
     data: projectUpdated
@@ -139,9 +151,10 @@ async function updateProject(req, res) {
 }
 
 
-module.exports = { 
+module.exports = {
   listProjects,
   getProject,
+  projectExists,
   createProject,
   deleteProject,
   updateProject
