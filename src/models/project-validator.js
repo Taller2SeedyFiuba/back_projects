@@ -22,7 +22,7 @@ Project.attSchema['location'] = Joi.object({
   'lng': Joi.number().required()
 })
 Project.attSchema['stages'] = Joi.array().items(Joi.object({
-  'title': Joi.string().min(3).max(80),
+  'title': Joi.string().min(3).max(40),
   'description': Joi.string().min(3).max(255),
   'amount': Joi.number().required()
 })).min(1).unique()

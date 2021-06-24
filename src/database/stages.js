@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       title: {
-        type: DataTypes.CHAR(20),
+        type: DataTypes.CHAR(40),
         primaryKey: false,
         allowNull: false
       },
