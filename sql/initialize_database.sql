@@ -71,7 +71,7 @@ DROP TABLE IF EXISTS stages;
 CREATE TABLE stages(
 	projectid INTEGER NOT NULL,
 	position INTEGER NOT NULL,
-	title VARCHAR(20) NOT NULL CHECK (title <> ''),
+	title VARCHAR(40) NOT NULL CHECK (title <> ''),
 	description VARCHAR(255) NOT NULL CHECK (description <> ''),
 	amount INTEGER NOT NULL CHECK (amount >= 0) DEFAULT 0
 );
