@@ -24,7 +24,7 @@ Project.attSchema['location'] = Joi.object({
 Project.attSchema['stages'] = Joi.array().items(Joi.object({
   'title': Joi.string().min(3).max(40),
   'description': Joi.string().min(3).max(255),
-  'amount': Joi.number().required()
+  'amount': Joi.number().positive().required()
 })).min(1).unique()
 
 
@@ -62,16 +62,16 @@ Project.validateAndFormatEdition = function (project, newData){
   newData.favouritescount = newData.favouritescount && newData.favouritescount + project.favouritescount
 
   if (project.stages.length <= newData.actualstage){
-    return { error: { message: "Wrong value for actualstage"}};
+    return { error: { message: "wrong-actualstage"}};
   }
   if (newData.fundedamount > project.totalamount || newData.fundedamount < 0){
-    return { error: { message: "Wrong value for fundedamount"}};
+    return { error: { message: "wrong-fundedamount"}};
   }
   if (newData.sponsorscount < 0){
-    return { error: { message: "Wrong value for sponsorscount" }};
+    return { error: { message: "wrong-sponsorscount" }};
   }
   if (newData.favouritescount < 0){
-    return { error: { message: "Wrong value for favouritescount" }};
+    return { error: { message: "wrong-favouritescount" }};
   }
 
   return { data: newData }

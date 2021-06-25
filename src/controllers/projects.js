@@ -84,7 +84,7 @@ async function listProjects(req, res) {
 async function getProject(req, res) {
   const { id } = req.params;
   const project = await Project.getProject(id);
-  if (!project) throw ApiError.notFound("Project not found");
+  if (!project) throw ApiError.notFound("project-not-found");
 
   return res.status(200).json({
     status: "success",
@@ -111,7 +111,7 @@ async function createProject(req, res) {
 
   //Create the project
   const newProject = await Project.createProject(req.body);
-  if (!newProject) throw ApiError.serverError("Internal error creating project");
+  if (!newProject) throw ApiError.serverError("internal-server-error");
   return res.status(201).json({
     status: "success",
     data: newProject
@@ -122,10 +122,10 @@ async function deleteProject(req, res) {
   const { id } = req.params;
   //Check if there is a project with that id
   const ProjectInDatabase = await Project.getProject(id);
-  if (!ProjectInDatabase) throw ApiError.notFound("Project does not exist")
+  if (!ProjectInDatabase) throw ApiError.notFound("project-not-exist")
 
   const projectDeleted = await Project.deleteProject(id)
-  if (!projectDeleted) throw ApiError.serverError("Server error")
+  if (!projectDeleted) throw ApiError.serverError("internal-server-error")
   return res.status(200).json({
     status: "success",
     data: ProjectInDatabase
@@ -136,13 +136,13 @@ async function updateProject(req, res) {
   const { id } = req.params;
   //Check project existance
   const projectToUpdate = await Project.getProject(id);
-  if (!projectToUpdate) throw ApiError.notFound("Project not found")
+  if (!projectToUpdate) throw ApiError.notFound("project-not-found")
   //Check if new data is valid.
   const { error, data } = validator.validateAndFormatEdition(projectToUpdate, req.body);
   if (error) throw ApiError.badRequest(error.message);
   //Update the project
   const projectUpdated = await Project.updateProject(id, data);
-  if (!projectUpdated) throw ApiError.serverError("Server error")
+  if (!projectUpdated) throw ApiError.serverError("internal-server-error")
 
   return res.status(200).json({
     status: "success",

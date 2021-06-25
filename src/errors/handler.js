@@ -24,7 +24,7 @@ function msErrorHandler(err, res) {
 
 function notDefinedHandler(req, res, next) {
   //Create error msg
-  const error = ApiError.notFound("Asked resource do not exists")
+  const error = ApiError.notFound("asked-resource-not-found")
   next(error);
 }
 
