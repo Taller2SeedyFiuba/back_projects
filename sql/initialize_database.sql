@@ -3,8 +3,8 @@ SET SEARCH_PATH TO 'public';
 -- CREATE EXTENSION postgis;
 
 CREATE TYPE PROJECT_TYPE AS ENUM (
-	'comida', 
-	'arte', 
+	'comida',
+	'arte',
 	'periodismo',
 	'manualidades',
 	'música',
@@ -20,10 +20,10 @@ CREATE TYPE PROJECT_TYPE AS ENUM (
 );
 
 CREATE TYPE PROJECT_STATE AS ENUM (
-	'on_review', 
-	'funding', 
-	'canceled', 
-	'in_progress', 
+	'on_review',
+	'funding',
+	'canceled',
+	'in_progress',
 	'completed'
 );
 
@@ -40,8 +40,8 @@ CREATE TABLE projects(
 	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	location GEOMETRY,
 	locationdescription VARCHAR(80) NOT NULL CHECK (locationdescription <> ''),
-	sponsorscount INTEGER NOT NULL DEFAULT 0,
-	favouritescount INTEGER NOT NULL DEFAULT 0,
+	sponsorscount INTEGER NOT NULL CHECK (sponsorscount >= 0) DEFAULT 0,
+	favouritescount INTEGER NOT NULL CHECK (favouritescount >= 0) DEFAULT 0,
 	fundedamount INTEGER NOT NULL CHECK (fundedamount >= 0) DEFAULT 0
 );
 
