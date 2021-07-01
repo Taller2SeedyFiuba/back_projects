@@ -146,7 +146,7 @@ async function getProject(id){
     'lng': result.location.coordinates[0]
   }
 
-  result.totalamount = result.stages.reduce((a, b) => { return a.amount + b.amount })
+  result.totalamount = result.stages.reduce((t, {amount}) => t + amount, 0)
 
   delete result['ProjectTags']
   delete result['locationdescription']

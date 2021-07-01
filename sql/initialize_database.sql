@@ -40,8 +40,8 @@ CREATE TABLE projects(
 	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	location GEOMETRY,
 	locationdescription VARCHAR(80) NOT NULL CHECK (locationdescription <> ''),
-	sponsorscount INTEGER NOT NULL CHECK (sponsorscount >= 0 DEFAULT 0,
-	favouritescount INTEGER NOT NULL CHECK (favouritescount >= 0 DEFAULT 0,
+	sponsorscount INTEGER NOT NULL CHECK (sponsorscount >= 0) DEFAULT 0,
+	favouritescount INTEGER NOT NULL CHECK (favouritescount >= 0) DEFAULT 0,
 	fundedamount INTEGER NOT NULL CHECK (fundedamount >= 0) DEFAULT 0
 );
 

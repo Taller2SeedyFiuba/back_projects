@@ -7,7 +7,6 @@ const ENV = process.env.NODE_ENV;
 function main() {
   try{
     const app = createApp();
-  
     app.listen(PORT, () => {
       console.log(`Servidor escuchando en http://localhost:${PORT}`);
       console.log(`Corriendo en modo: ${ENV}`);
