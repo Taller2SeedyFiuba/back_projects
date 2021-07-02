@@ -10,7 +10,7 @@ Project.attSchema['title'] = Joi.string().min(5).max(80)
 Project.attSchema['description'] = Joi.string().min(5)
 Project.attSchema['type'] = Joi.string().valid(...ProjectModel.enums.type)
 Project.attSchema['state'] = Joi.string().valid(...ProjectModel.enums.state)
-Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30))
+Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30)).unique()
 Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
 Project.attSchema['fundedamount'] = Joi.number().integer(),
 Project.attSchema['sponsorscount'] = Joi.number().integer()
@@ -24,7 +24,7 @@ Project.attSchema['location'] = Joi.object({
 Project.attSchema['stages'] = Joi.array().items(Joi.object({
   'title': Joi.string().min(3).max(40),
   'description': Joi.string().min(3).max(255),
-  'amount': Joi.number().positive().required()
+  'amount': Joi.number().positive().max(99999).required()
 })).min(1).unique()
 
 
