@@ -51,7 +51,7 @@ Swagger is used to document the API structure.
 
 #### Unit Tests
 ```npm
-npm run test
+docker-compose build && docker-compose run --rm project-service npm run test
 ```
 
 ## Production Deployment CI

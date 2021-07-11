@@ -1,0 +1,12 @@
+listeners:
+  - name: docker
+config_providers:
+  - name: docker
+    polling: true
+    poll_interval: 1s
+process_config:
+    enabled: 'true'
+
+hostname: projects-service
+
+node_version: 14.16.1
