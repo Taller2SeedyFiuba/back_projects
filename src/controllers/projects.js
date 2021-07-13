@@ -1,4 +1,5 @@
 const { ApiError } = require("../errors/ApiError");
+const errMsg = require("../errors/messages")
 const Project = require("../models/projects")
 const validator = require("../models/project-validator")
 const Joi = require("joi")
@@ -84,7 +85,7 @@ async function listProjects(req, res) {
 async function getProject(req, res) {
   const { id } = req.params;
   const project = await Project.getProject(id);
-  if (!project) throw ApiError.notFound("project-not-found");
+  if (!project) throw ApiError.notFound(errMsg.PROJECT_NOT_FOUND);
 
   return res.status(200).json({
     status: "success",
@@ -111,7 +112,7 @@ async function createProject(req, res) {
 
   //Create the project
   const newProject = await Project.createProject(req.body);
-  if (!newProject) throw ApiError.serverError("internal-server-error");
+  if (!newProject) throw ApiError.serverError(errMsg.INTERNAL_ERROR);
   return res.status(201).json({
     status: "success",
     data: newProject
@@ -122,10 +123,10 @@ async function deleteProject(req, res) {
   const { id } = req.params;
   //Check if there is a project with that id
   const ProjectInDatabase = await Project.getProject(id);
-  if (!ProjectInDatabase) throw ApiError.notFound("project-not-exist")
+  if (!ProjectInDatabase) throw ApiError.notFound(errMsg.PROJECT_NOT_FOUND)
 
   const projectDeleted = await Project.deleteProject(id)
-  if (!projectDeleted) throw ApiError.serverError("internal-server-error")
+  if (!projectDeleted) throw ApiError.serverError(errMsg.INTERNAL_ERROR)
   return res.status(200).json({
     status: "success",
     data: ProjectInDatabase
@@ -136,13 +137,13 @@ async function updateProject(req, res) {
   const { id } = req.params;
   //Check project existance
   const projectToUpdate = await Project.getProject(id);
-  if (!projectToUpdate) throw ApiError.notFound("project-not-found")
+  if (!projectToUpdate) throw ApiError.notFound(errMsg.PROJECT_NOT_FOUND)
   //Check if new data is valid.
   const { error, data } = validator.validateAndFormatEdition(projectToUpdate, req.body);
   if (error) throw ApiError.badRequest(error.message);
   //Update the project
   const projectUpdated = await Project.updateProject(id, data);
-  if (!projectUpdated) throw ApiError.serverError("internal-server-error")
+  if (!projectUpdated) throw ApiError.serverError(errMsg.INTERNAL_ERROR)
 
   return res.status(200).json({
     status: "success",

@@ -1,49 +1,38 @@
-/*
-const codes = {
-  notAuthorized: 401,
-  badRequest: 400,
-  notFound: 404,
-  dependencyError: 502,
-  dependencyTimout: 504,
-  serverError: 500
-}
-*/
-
 class ApiError {
   constructor(code, message) {
     this.code = code;
     this.message = message;
   }
   static codes = {
-    notAuthorized: 401,
     badRequest: 400,
+    notAuthorized: 401,
     notFound: 404,
+    serverError: 500,
     dependencyError: 502,
-    dependencyTimout: 504,
-    serverError: 500
+    dependencyTimeout: 504
   }
   static notAuthorized(message) {
-    return new ApiError(401, message)
+    return new ApiError(ApiError.codes.notAuthorized, message)
   }
 
   static badRequest(message) {
-    return new ApiError(400, message);
+    return new ApiError(ApiError.codes.badRequest, message);
   }
 
   static notFound(message) {
-    return new ApiError(404, message);
+    return new ApiError(ApiError.codes.notFound, message);
   }
 
   static dependencyError(message) {
-    return new ApiError(502, message);
+    return new ApiError(ApiError.codes.dependencyError, message);
   }
 
-  static dependencyTimout(message) {
-    return new ApiError(504, message);
+  static dependencyTimeout(message) {
+    return new ApiError(ApiError.codes.dependencyTimeout, message);
   }
 
   static serverError(message) {
-    return new ApiError(500, message);
+    return new ApiError(ApiError.codes.serverError, message);
   }
 };
 
