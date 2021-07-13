@@ -1,4 +1,4 @@
-const createProject = require('../projects')
+const createProject = require('../models/projects')
 const Sequelize = require('sequelize');
 //Mock sequelize define
 const define = a => {
