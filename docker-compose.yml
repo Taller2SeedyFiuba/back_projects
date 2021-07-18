@@ -9,14 +9,9 @@ services:
         env_file:
             - .env
         networks:
-            - default
-            - project-net
-        ports:
-            - ${PORT}:${PORT}
+            - my-net
         depends_on:
-            psql-projects:
-                condition: service_healthy
-        
+          - psql-projects
     psql-projects:
         image: postgis/postgis
         container_name: psql-projects
@@ -29,15 +24,9 @@ services:
             retries: 5
         volumes:
             - ./sql/initialize_database.sql:/docker-entrypoint-initdb.d/init.sql
-        ports:
-            - 5429:5432
         networks:
-            - project-net
-            
+            - my-net
 networks:
-    default:
-        external: true
-        name: my-net
-    project-net:
-        driver: bridge
-        name: project-net
+  my-net:
+    external:
+      name: my-net
