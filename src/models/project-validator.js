@@ -12,7 +12,7 @@ Project.attSchema['type'] = Joi.string().valid(...ProjectModel.enums.type)
 Project.attSchema['state'] = Joi.string().valid(...ProjectModel.enums.state)
 Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30)).unique()
 Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
-Project.attSchema['fundedamount'] = Joi.number().integer(),
+Project.attSchema['fundedamount'] = Joi.number()
 Project.attSchema['sponsorscount'] = Joi.number().integer()
 Project.attSchema['favouritescount'] = Joi.number().integer()
 Project.attSchema['actualstage'] = Joi.number().integer()
@@ -49,6 +49,7 @@ Project.validateAndFormatEdition = function (project, newData){
     description: this.attSchema['description'],
     actualstage: Joi.number().integer().equal(1),
     fundedamount: this.attSchema['fundedamount'],
+    state: this.attSchema['state'],
     sponsorscount: Joi.number().integer().valid(-1, 1),  //It can only be incremented by one
     favouritescount: Joi.number().integer().valid(-1, 1)
   }).options({ abortEarly: false });
@@ -57,7 +58,6 @@ Project.validateAndFormatEdition = function (project, newData){
   if (validation.error) return validation;
 
   newData.actualstage = newData.actualstage && newData.actualstage + project.actualstage
-  newData.fundedamount = newData.fundedamount && newData.fundedamount + project.fundedamount
   newData.sponsorscount = newData.sponsorscount && newData.sponsorscount + project.sponsorscount
   newData.favouritescount = newData.favouritescount && newData.favouritescount + project.favouritescount
 

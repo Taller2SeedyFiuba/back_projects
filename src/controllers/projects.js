@@ -151,12 +151,11 @@ async function updateProject(req, res) {
   });
 }
 
-
 module.exports = {
   listProjects,
   getProject,
   projectExists,
   createProject,
   deleteProject,
-  updateProject
+  updateProject,
 }
