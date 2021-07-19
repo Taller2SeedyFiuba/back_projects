@@ -8,6 +8,8 @@ services:
         restart: always
         env_file:
             - .env
+        #ports:
+        #    - ${PORT}:${PORT}
         networks:
             - my-net
         depends_on:

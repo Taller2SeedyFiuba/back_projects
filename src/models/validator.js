@@ -77,4 +77,42 @@ Project.validateAndFormatEdition = function (project, newData){
   return { data: newData }
 }
 
+Project.validateSearch = function (parameters){
+
+  const locationSchema = Joi.object({
+    lng: Joi.number().required(),
+    lat: Joi.number().required(),
+    dist: Joi.number().required()
+  }).options({ abortEarly: false });
+
+  const filterSchema = Joi.object({
+    id: Joi.array().items(Project.attSchema['id']),
+    ownerid: Project.attSchema['ownerid'],
+    state: Project.attSchema['state'],
+    type: Project.attSchema['type'],
+    tags: Project.attSchema['tags'],
+    location: locationSchema
+  }).options({ abortEarly: false });
+
+  const querySchema = Joi.object({
+    filters: filterSchema,
+    limit: Joi.number().integer().positive(),
+    page: Joi.number().integer().positive()
+  }).options({ abortEarly: false });
+
+  return querySchema.validate(parameters);
+}
+
+Project.validateMetrics = function (data) {
+  const JoiSchema = Joi.object({
+    timeinterval: Joi.string().equal(...['month', 'week', 'day', 'hour', 'minute', 'second']),
+    fromdate: Joi.date(),
+    todate: Joi.date(),
+    limit: Joi.number().positive()
+  }).options({ abortEarly: false });
+
+  return JoiSchema.validate(data);
+}
+
+
 module.exports = Project

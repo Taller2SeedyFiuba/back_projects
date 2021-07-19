@@ -1,37 +1,8 @@
 const { ApiError } = require("../errors/ApiError");
 const errMsg = require("../errors/messages")
 const Project = require("../models/projects")
-const validator = require("../models/project-validator")
-const Joi = require("joi")
+const validator = require("../models/validator")
 
-
-//Aux function
-
-function listProjectValidator(parameters){
-
-  const locationSchema = Joi.object({
-    lng: Joi.number().required(),
-    lat: Joi.number().required(),
-    dist: Joi.number().required()
-  }).options({ abortEarly: false });
-
-  const filterSchema = Joi.object({
-    id: Joi.array().items(validator.attSchema['id']),
-    ownerid: validator.attSchema['ownerid'],
-    state: validator.attSchema['state'],
-    type: validator.attSchema['type'],
-    tags: validator.attSchema['tags'],
-    location: locationSchema
-  }).options({ abortEarly: false });
-
-  const querySchema = Joi.object({
-    filters: filterSchema,
-    limit: Joi.number().integer().positive(),
-    page: Joi.number().integer().positive()
-  }).options({ abortEarly: false });
-
-  return querySchema.validate(parameters);
-}
 
 function formatDatabseSearch(data){
   const toArray = input => {
@@ -73,7 +44,7 @@ function formatDatabseSearch(data){
 async function listProjects(req, res) {
 
   const dbParams = formatDatabseSearch(req.query)
-  const { error } = listProjectValidator(dbParams);
+  const { error } = validator.validateSearch(dbParams);
   if (error) throw ApiError.badRequest(error.message);
   const projects = await Project.getAllProjectsResume(dbParams);
   return res.status(200).json({
