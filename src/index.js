@@ -18,6 +18,3 @@ main()
   .catch(err => {
     logError(err.message)
   });
-
-
-

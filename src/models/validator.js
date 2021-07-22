@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { BigNumber } = require('bignumber.js');
 const { Project: ProjectModel } = require("../database/index");
 
 Project = {
@@ -47,8 +48,8 @@ Project.validateNew = function (project){
 Project.validateAndFormatEdition = function (project, newData){
   const JoiSchema = Joi.object({
     description: this.attSchema['description'],
-    actualstage: Joi.number().integer().equal(1),
-    fundedamount: this.attSchema['fundedamount'],
+    actualstage: this.attSchema['actualstage'],
+    missingamount: this.attSchema['fundedamount'],
     state: this.attSchema['state'],
     sponsorscount: Joi.number().integer().valid(-1, 1),  //It can only be incremented by one
     favouritescount: Joi.number().integer().valid(-1, 1)
@@ -57,22 +58,30 @@ Project.validateAndFormatEdition = function (project, newData){
   const validation = JoiSchema.validate(newData);
   if (validation.error) return validation;
 
-  newData.actualstage = newData.actualstage && newData.actualstage + project.actualstage
   newData.sponsorscount = newData.sponsorscount && newData.sponsorscount + project.sponsorscount
   newData.favouritescount = newData.favouritescount && newData.favouritescount + project.favouritescount
 
-  if (project.stages.length <= newData.actualstage){
+  if (newData.missingamount){
+    const missing = new BigNumber(newData.missingamount)
+    const total = new BigNumber(project.totalamount)
+    newData.fundedamount = total.minus(missing).toNumber()
+    if (missing.gt(total) || missing.lt(0)){
+      return { error: { message: "wrong-missingamount"}};
+    }
+  }
+
+  if (project.stages.length < newData.actualstage){
     return { error: { message: "wrong-actualstage"}};
   }
-  if (newData.fundedamount > project.totalamount || newData.fundedamount < 0){
-    return { error: { message: "wrong-fundedamount"}};
-  }
+
   if (newData.sponsorscount < 0){
     return { error: { message: "wrong-sponsorscount" }};
   }
   if (newData.favouritescount < 0){
     return { error: { message: "wrong-favouritescount" }};
   }
+
+  delete newData['missingamount']
 
   return { data: newData }
 }

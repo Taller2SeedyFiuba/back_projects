@@ -146,7 +146,7 @@ async function getProject(id){
     'lng': result.location.coordinates[0]
   }
 
-  result.totalamount = result.stages.reduce((t, {amount}) => t + amount, 0)
+  result.totalamount = "" + result.stages.reduce((t, {amount}) => t + Number(amount), 0)
 
   delete result['ProjectTags']
   delete result['locationdescription']
@@ -213,18 +213,36 @@ const getProjectMetrics = async(params) => {
     'group': 'state',
     'attributes': [
       'state',
-      [sequelize.fn('COUNT', '*'), 'metric']
+      [sequelize.cast(sequelize.fn('COUNT', '*'), 'integer'), 'metric']
     ],
     'raw': true
+  })
+
+  Project.enums.state.forEach(function(state){
+    if(!projectsbystate.find(function(elem){ return elem.state == state })){
+      projectsbystate.push({
+        state,
+        metric: 0
+      })
+    }
   })
 
   const projectsbytype = await Project.findAll({
     'group': 'type',
     'attributes': [
       'type',
-      [sequelize.fn('COUNT', '*'), 'metric']
+      [sequelize.cast(sequelize.fn('COUNT', '*'), 'integer'), 'metric']
     ],
     'raw': true
+  })
+
+  Project.enums.type.forEach(function(type){
+    if(!projectsbytype.find(function(elem){ return elem.type == type })){
+      projectsbytype.push({
+        type,
+        metric: 0
+      })
+    }
   })
 
   const result = {
