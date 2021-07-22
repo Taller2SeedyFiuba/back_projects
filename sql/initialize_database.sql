@@ -37,12 +37,12 @@ CREATE TABLE projects(
 	type PROJECT_TYPE NOT NULL,
 	state PROJECT_STATE NOT NULL DEFAULT 'on_review',
 	actualstage INTEGER NOT NULL DEFAULT 0,
-	creationdate date NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	creationdate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	location GEOMETRY,
 	locationdescription VARCHAR(80) NOT NULL CHECK (locationdescription <> ''),
 	sponsorscount INTEGER NOT NULL CHECK (sponsorscount >= 0) DEFAULT 0,
 	favouritescount INTEGER NOT NULL CHECK (favouritescount >= 0) DEFAULT 0,
-	fundedamount INTEGER NOT NULL CHECK (fundedamount >= 0) DEFAULT 0
+	fundedamount NUMERIC NOT NULL CHECK (fundedamount >= 0) DEFAULT 0
 );
 
 DROP TABLE IF EXISTS projectTag;
@@ -73,7 +73,7 @@ CREATE TABLE stages(
 	position INTEGER NOT NULL,
 	title VARCHAR(40) NOT NULL CHECK (title <> ''),
 	description VARCHAR(255) NOT NULL CHECK (description <> ''),
-	amount INTEGER NOT NULL CHECK (amount >= 0) DEFAULT 0
+	amount NUMERIC NOT NULL CHECK (amount >= 0) DEFAULT 0
 );
 
 ALTER TABLE stages ADD CONSTRAINT pk_stages PRIMARY KEY(projectid, position);

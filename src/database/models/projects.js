@@ -83,7 +83,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0
       },
       fundedamount: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL,
         allowNull: false,
         defaultValue: 0
       }

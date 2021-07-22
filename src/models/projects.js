@@ -146,7 +146,7 @@ async function getProject(id){
     'lng': result.location.coordinates[0]
   }
 
-  result.totalamount = result.stages.reduce((t, {amount}) => t + amount, 0)
+  result.totalamount = "" + result.stages.reduce((t, {amount}) => t + Number(amount), 0)
 
   delete result['ProjectTags']
   delete result['locationdescription']
@@ -180,11 +180,87 @@ async function updateProject(id, newData) {
 }
 
 
+const castAndCumulateMetric = function(data){
+  if (!data) return null
+  let sum = 0;
+  return data.map(elem => {
+    sum += Number(elem.metric)
+    elem.metric = sum
+    return elem
+  })
+}
+
+const getProjectMetrics = async(params) => {
+  aggDateFunction = sequelize.fn('date_trunc', params.timeinterval || 'day', sequelize.col('creationdate'))
+  console.log(params)
+  const searchParams = {
+    'group': [aggDateFunction],
+    'attributes': [
+      [aggDateFunction, 'timestamp'],
+      [sequelize.fn('COUNT', aggDateFunction), 'metric']
+    ],
+    'where': {
+      'creationdate': {
+        [Sequelize.Op.gte]: params.fromdate || '1800-01-01',
+        [Sequelize.Op.lte]: params.todate || '2200-01-01'
+      },
+    },
+    'order': [[aggDateFunction, 'ASC']],
+    'raw': true
+  }
+
+  const projectsbystate = await Project.findAll({
+    'group': 'state',
+    'attributes': [
+      'state',
+      [sequelize.cast(sequelize.fn('COUNT', '*'), 'integer'), 'metric']
+    ],
+    'raw': true
+  })
+
+  Project.enums.state.forEach(function(state){
+    if(!projectsbystate.find(function(elem){ return elem.state == state })){
+      projectsbystate.push({
+        state,
+        metric: 0
+      })
+    }
+  })
+
+  const projectsbytype = await Project.findAll({
+    'group': 'type',
+    'attributes': [
+      'type',
+      [sequelize.cast(sequelize.fn('COUNT', '*'), 'integer'), 'metric']
+    ],
+    'raw': true
+  })
+
+  Project.enums.type.forEach(function(type){
+    if(!projectsbytype.find(function(elem){ return elem.type == type })){
+      projectsbytype.push({
+        type,
+        metric: 0
+      })
+    }
+  })
+
+  const result = {
+    'projectshistory': castAndCumulateMetric(await Project.findAll(searchParams)),
+    projectsbystate,
+    projectsbytype
+  }
+
+  return result
+}
+
+
 module.exports = {
   getProject,
   getAllProjectsResume,
   projectExists,
   createProject,
   updateProject,
-  deleteProject
+  deleteProject,
+  getProjectMetrics
 };

@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { BigNumber } = require('bignumber.js');
 const { Project: ProjectModel } = require("../database/index");
 
 Project = {
@@ -12,7 +13,7 @@ Project.attSchema['type'] = Joi.string().valid(...ProjectModel.enums.type)
 Project.attSchema['state'] = Joi.string().valid(...ProjectModel.enums.state)
 Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30)).unique()
 Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
-Project.attSchema['fundedamount'] = Joi.number().integer(),
+Project.attSchema['fundedamount'] = Joi.number()
 Project.attSchema['sponsorscount'] = Joi.number().integer()
 Project.attSchema['favouritescount'] = Joi.number().integer()
 Project.attSchema['actualstage'] = Joi.number().integer()
@@ -47,8 +48,9 @@ Project.validateNew = function (project){
 Project.validateAndFormatEdition = function (project, newData){
   const JoiSchema = Joi.object({
     description: this.attSchema['description'],
-    actualstage: Joi.number().integer().equal(1),
-    fundedamount: this.attSchema['fundedamount'],
+    actualstage: this.attSchema['actualstage'],
+    missingamount: this.attSchema['fundedamount'],
+    state: this.attSchema['state'],
     sponsorscount: Joi.number().integer().valid(-1, 1),  //It can only be incremented by one
     favouritescount: Joi.number().integer().valid(-1, 1)
   }).options({ abortEarly: false });
@@ -56,17 +58,22 @@ Project.validateAndFormatEdition = function (project, newData){
   const validation = JoiSchema.validate(newData);
   if (validation.error) return validation;
 
-  newData.actualstage = newData.actualstage && newData.actualstage + project.actualstage
-  newData.fundedamount = newData.fundedamount && newData.fundedamount + project.fundedamount
   newData.sponsorscount = newData.sponsorscount && newData.sponsorscount + project.sponsorscount
   newData.favouritescount = newData.favouritescount && newData.favouritescount + project.favouritescount
 
-  if (project.stages.length <= newData.actualstage){
+  if (newData.missingamount){
+    const missing = new BigNumber(newData.missingamount)
+    const total = new BigNumber(project.totalamount)
+    newData.fundedamount = total.minus(missing).toNumber()
+    if (missing.gt(total) || missing.lt(0)){
+      return { error: { message: "wrong-missingamount"}};
+    }
+  }
+
+  if (project.stages.length < newData.actualstage){
     return { error: { message: "wrong-actualstage"}};
   }
-  if (newData.fundedamount > project.totalamount || newData.fundedamount < 0){
-    return { error: { message: "wrong-fundedamount"}};
-  }
+
   if (newData.sponsorscount < 0){
     return { error: { message: "wrong-sponsorscount" }};
   }
@@ -74,7 +81,47 @@ Project.validateAndFormatEdition = function (project, newData){
     return { error: { message: "wrong-favouritescount" }};
   }
 
+  delete newData['missingamount']
+
   return { data: newData }
 }
+
+Project.validateSearch = function (parameters){
+
+  const locationSchema = Joi.object({
+    lng: Joi.number().required(),
+    lat: Joi.number().required(),
+    dist: Joi.number().required()
+  }).options({ abortEarly: false });
+
+  const filterSchema = Joi.object({
+    id: Joi.array().items(Project.attSchema['id']),
+    ownerid: Project.attSchema['ownerid'],
+    state: Project.attSchema['state'],
+    type: Project.attSchema['type'],
+    tags: Project.attSchema['tags'],
+    location: locationSchema
+  }).options({ abortEarly: false });
+
+  const querySchema = Joi.object({
+    filters: filterSchema,
+    limit: Joi.number().integer().positive(),
+    page: Joi.number().integer().positive()
+  }).options({ abortEarly: false });
+
+  return querySchema.validate(parameters);
+}
+
+Project.validateMetrics = function (data) {
+  const JoiSchema = Joi.object({
+    timeinterval: Joi.string().equal(...['month', 'week', 'day', 'hour', 'minute', 'second']),
+    fromdate: Joi.date(),
+    todate: Joi.date(),
+    limit: Joi.number().positive()
+  }).options({ abortEarly: false });
+
+  return JoiSchema.validate(data);
+}
+
 
 module.exports = Project
