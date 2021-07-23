@@ -46,7 +46,7 @@ async function getAllProjectsResume(params) {
                          'limit': params.limit || 10,
                          'offset': (params.page - 1) * params.limit || 0,
                          'order': [['id', 'asc']],
-                         'raw': true }
+                        }
   //Search for first multimedia
   searchParams.include.push({
     'model': Multimedia.getModel(),
@@ -86,19 +86,21 @@ async function getAllProjectsResume(params) {
     searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
-  const result = await Project.findAndCountAll(searchParams)
+  let result = await Project.findAll(searchParams)
+  result = result.map(record => record.get({ plain: true }))
 
-  result.rows = result.rows.map(project => {
 
-    project.icon = project['Multimedia.url']
-    if (project.distance) project.distance /= 1000;//Sequelize measures distance in meters
-    delete project['Multimedia.url']
+  result = result.map(project => {
+    project.icon = (project['Multimedia'].length == 0) ? null : project['Multimedia'][0].url
+    if (project.distance) project.distance /= 1000; //Sequelize measures distance in meters
     project.location = project.locationdescription
+
+    delete project['Multimedia']
     delete project['locationdescription']
     return project
   })
 
-  return result.rows
+  return result
 }
 
 
@@ -168,12 +170,6 @@ async function deleteProject(id){
 }
 
 async function updateProject(id, newData) {
-  //const totalAmount = projectToUpdate.stages.reduce((a, b) => { return a.amount + b.amount })
-//
-  //if (totalAmount == newData.fundedamount){
-  //  newData.actualstate += 1; //Quizas esto deberia setearse manualmente escuchando a un evento
-  //}
-
   const response = await Project.update(newData, { where: { id } });
   if (!response || !response[0]) return 0;
   return response[0] ? await getProject(id) : 0;

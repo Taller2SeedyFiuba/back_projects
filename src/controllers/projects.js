@@ -5,18 +5,15 @@ const validator = require("../models/validator")
 
 
 function formatDatabseSearch(data){
-  const toArray = input => {
-    if (Array.isArray(input)) return input
-    return [input]
-  }
+
   //Nota: Queremos permitir ciertos campos que puedan ser falsy y no necesariamente undefined.
   let dbParams = {
     filters: {
-      id: (data.id != undefined) ? toArray(data.id).map(x => parseInt(x)) : undefined,
+      id: data.id,
       type: data.type,
       ownerid: data.ownerid,
       state: data.state,
-      tags: (data.tags != undefined) ? toArray(data.tags) : undefined,
+      tags: data.tags,
       location: (data.lat == undefined) ? undefined : {
         lat: data.lat,
         lng: data.lng,

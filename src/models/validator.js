@@ -11,7 +11,8 @@ Project.attSchema['title'] = Joi.string().min(5).max(80)
 Project.attSchema['description'] = Joi.string().min(5)
 Project.attSchema['type'] = Joi.string().valid(...ProjectModel.enums.type)
 Project.attSchema['state'] = Joi.string().valid(...ProjectModel.enums.state)
-Project.attSchema['tags'] = Joi.array().items(Joi.string().min(2).max(30)).unique()
+Project.attSchema['tag'] = Joi.string().min(2).max(30)
+Project.attSchema['tags'] = Joi.array().items(Project.attSchema['tag']).unique()
 Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
 Project.attSchema['fundedamount'] = Joi.number()
 Project.attSchema['sponsorscount'] = Joi.number().integer()
@@ -95,11 +96,11 @@ Project.validateSearch = function (parameters){
   }).options({ abortEarly: false });
 
   const filterSchema = Joi.object({
-    id: Joi.array().items(Project.attSchema['id']),
+    id: Joi.array().items(Project.attSchema['id']).single(),
     ownerid: Project.attSchema['ownerid'],
-    state: Project.attSchema['state'],
+    state: Joi.array().items(Project.attSchema['state']).single(),
     type: Project.attSchema['type'],
-    tags: Project.attSchema['tags'],
+    tags: Joi.array().items(Project.attSchema['tag']).single(),
     location: locationSchema
   }).options({ abortEarly: false });
 
