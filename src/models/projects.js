@@ -79,16 +79,16 @@ async function getAllProjectsResume(params) {
   if (params.filters && params.filters.location){
     const lat = params.filters.location.lat
     const lng = params.filters.location.lng
-    const dist = params.filters.location.dist * 1000 //Sequelize measures distance in meters
+    const dist = Number(params.filters.location.dist) * 1000 //Sequelize measures distance in meters
     const location = sequelize.literal(`ST_GeomFromText('POINT(${lng} ${lat})')`);
     const distance = sequelize.fn('ST_DistanceSphere', sequelize.col("location"), location);
+
     searchParams.order = distance
-    searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
+
   let result = await Project.findAll(searchParams)
   result = result.map(record => record.get({ plain: true }))
-
 
   result = result.map(project => {
     project.icon = (project['Multimedia'].length == 0) ? null : project['Multimedia'][0].url
