@@ -61,17 +61,6 @@ async function getProject(req, res) {
   });
 }
 
-async function projectExists(req, res) {
-  const { id } = req.params;
-
-  const exists = await Project.projectExists(id);
-
-  return res.status(200).json({
-    status: "success",
-    data: exists
-  });
-}
-
 async function createProject(req, res) {
 
   //Validate project attributes
@@ -84,20 +73,6 @@ async function createProject(req, res) {
   return res.status(201).json({
     status: "success",
     data: newProject
-  });
-}
-
-async function deleteProject(req, res) {
-  const { id } = req.params;
-  //Check if there is a project with that id
-  const ProjectInDatabase = await Project.getProject(id);
-  if (!ProjectInDatabase) throw ApiError.notFound(errMsg.PROJECT_NOT_FOUND)
-
-  const projectDeleted = await Project.deleteProject(id)
-  if (!projectDeleted) throw ApiError.serverError(errMsg.INTERNAL_ERROR)
-  return res.status(200).json({
-    status: "success",
-    data: ProjectInDatabase
   });
 }
 
@@ -122,8 +97,6 @@ async function updateProject(req, res) {
 module.exports = {
   listProjects,
   getProject,
-  projectExists,
   createProject,
-  deleteProject,
   updateProject,
 }

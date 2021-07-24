@@ -158,17 +158,6 @@ async function getProject(id){
   return result
 }
 
-async function projectExists(id){
-  return await Project.findByPk(id) ? true : false
-}
-
-async function deleteProject(id){
-  await ProjectTag.projectDeleteTags(id);
-  await Multimedia.projectDeleteMultimedia(id);
-  await Stages.projectDeleteStages(id);
-  return await Project.destroy({ where: { id } });
-}
-
 async function updateProject(id, newData) {
   const response = await Project.update(newData, { where: { id } });
   if (!response || !response[0]) return 0;
@@ -254,9 +243,7 @@ const getProjectMetrics = async(params) => {
 module.exports = {
   getProject,
   getAllProjectsResume,
-  projectExists,
   createProject,
   updateProject,
-  deleteProject,
   getProjectMetrics
 };
