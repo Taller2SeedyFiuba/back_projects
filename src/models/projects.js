@@ -46,6 +46,7 @@ async function getAllProjectsResume(params) {
                          'limit': params.limit || 10,
                          'offset': (params.page - 1) * params.limit || 0,
                          'order': [['id', 'asc']],
+                          subQuery: false
                         }
   //Search for first multimedia
   searchParams.include.push({
