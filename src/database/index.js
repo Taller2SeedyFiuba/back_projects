@@ -8,16 +8,13 @@ const modelsDirectory = __dirname + '/models'
 const { env, databaseURL } = require('../config')
 const { logDebug, logInfo } = require('../utils/log')
 const db = {};
-let options = { logging: logDebug };
-
-if (env == 'production') {
-  options['dialectOptions'] = { ssl: { require: true, rejectUnauthorized: false } }
-}
 
 logInfo("Conectando con base de datos")
 logDebug("Database URL: " + databaseURL)
 
-const sequelize = new Sequelize(databaseURL, options);
+const data = require("../database-config.js");
+
+let sequelize = new Sequelize(data[env].url, data[env]);
 
 fs
   .readdirSync(modelsDirectory)
