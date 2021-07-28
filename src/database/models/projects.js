@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       title: {
-        type: DataTypes.CHAR(80),
+        type: DataTypes.CHAR(45),
         allowNull: false,
       },
       description: {
