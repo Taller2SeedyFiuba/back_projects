@@ -7,25 +7,25 @@ Project = {
 }
 Project.attSchema['id'] = Joi.number().integer()
 Project.attSchema['ownerid'] = Joi.string().max(255)
-Project.attSchema['title'] = Joi.string().min(5).max(80)
-Project.attSchema['description'] = Joi.string().min(5)
+Project.attSchema['title'] = Joi.string().min(1).max(45)
+Project.attSchema['description'] = Joi.string().min(1)
 Project.attSchema['type'] = Joi.string().valid(...ProjectModel.enums.type)
 Project.attSchema['state'] = Joi.string().valid(...ProjectModel.enums.state)
-Project.attSchema['tag'] = Joi.string().min(2).max(30)
+Project.attSchema['tag'] = Joi.string().min(1).max(30)
 Project.attSchema['tags'] = Joi.array().items(Project.attSchema['tag']).unique()
-Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(2).max(255))
+Project.attSchema['multimedia'] = Joi.array().items(Joi.string().min(1).max(255))
 Project.attSchema['fundedamount'] = Joi.number()
 Project.attSchema['sponsorscount'] = Joi.number().integer()
 Project.attSchema['favouritescount'] = Joi.number().integer()
 Project.attSchema['actualstage'] = Joi.number().integer()
 Project.attSchema['location'] = Joi.object({
-  'description': Joi.string().min(3).max(80),
+  'description': Joi.string().min(1).max(80),
   'lat': Joi.number().required(),
   'lng': Joi.number().required()
 })
 Project.attSchema['stages'] = Joi.array().items(Joi.object({
-  'title': Joi.string().min(3).max(40),
-  'description': Joi.string().min(3).max(255),
+  'title': Joi.string().min(1).max(35),
+  'description': Joi.string().min(1).max(255),
   'amount': Joi.number().positive().max(99999).required()
 })).min(1).unique()
 

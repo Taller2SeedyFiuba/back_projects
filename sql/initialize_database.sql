@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS projects;
 CREATE TABLE projects(
 	id SERIAL PRIMARY KEY,
 	ownerid VARCHAR(255) NOT NULL CHECK (ownerid <> ''),
-	title VARCHAR(80) NOT NULL CHECK (title <> ''),
+	title VARCHAR(45) NOT NULL CHECK (title <> ''),
 	description TEXT NOT NULL CHECK (description <> ''),
 	type PROJECT_TYPE NOT NULL,
 	state PROJECT_STATE NOT NULL DEFAULT 'on_review',
@@ -71,7 +71,7 @@ DROP TABLE IF EXISTS stages;
 CREATE TABLE stages(
 	projectid INTEGER NOT NULL,
 	position INTEGER NOT NULL,
-	title VARCHAR(40) NOT NULL CHECK (title <> ''),
+	title VARCHAR(35) NOT NULL CHECK (title <> ''),
 	description VARCHAR(255) NOT NULL CHECK (description <> ''),
 	amount NUMERIC NOT NULL CHECK (amount >= 0) DEFAULT 0
 );
