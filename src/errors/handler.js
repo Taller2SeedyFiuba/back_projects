@@ -24,11 +24,11 @@ function msErrorHandler(err, res) {
     logErrorByCode(response.status, response.data);
     return errorResponse(res, response.status, response.data.message)
   } else if (request) {
-    logErrorByCode(response.status, request);
-    return errorResponse(res, response.status, errMsg.INTERNAL_REQ_ERROR)
+    logError(ApiError.codes.dependencyError, request);
+    return errorResponse(res, ApiError.codes.dependencyError, errMsg.INTERNAL_REQ_ERROR)
   } else {
     logError(message);
-    return errorResponse(res, ApiError.codes.dependencyError, errMsg.INTERNAL_REQ_ERROR)
+    return errorResponse(res, ApiError.codes.serverError, errMsg.INTERNAL_ERROR)
   }
 }
 

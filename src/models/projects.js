@@ -46,7 +46,8 @@ async function getAllProjectsResume(params) {
                          'limit': params.limit || 10,
                          'offset': (params.page - 1) * params.limit || 0,
                          'order': [['id', 'asc']],
-                         'raw': true }
+                          subQuery: false
+                        }
   //Search for first multimedia
   searchParams.include.push({
     'model': Multimedia.getModel(),
@@ -79,26 +80,28 @@ async function getAllProjectsResume(params) {
   if (params.filters && params.filters.location){
     const lat = params.filters.location.lat
     const lng = params.filters.location.lng
-    const dist = params.filters.location.dist * 1000 //Sequelize measures distance in meters
+    const dist = Number(params.filters.location.dist) * 1000 //Sequelize measures distance in meters
     const location = sequelize.literal(`ST_GeomFromText('POINT(${lng} ${lat})')`);
     const distance = sequelize.fn('ST_DistanceSphere', sequelize.col("location"), location);
+
     searchParams.order = distance
-    searchParams.attributes.push([distance,'distance'])
     searchParams.where.push(sequelize.where(distance, Sequelize.Op.lte, dist))
   }
-  const result = await Project.findAndCountAll(searchParams)
 
-  result.rows = result.rows.map(project => {
+  let result = await Project.findAll(searchParams)
+  result = result.map(record => record.get({ plain: true }))
 
-    project.icon = project['Multimedia.url']
-    if (project.distance) project.distance /= 1000;//Sequelize measures distance in meters
-    delete project['Multimedia.url']
+  result = result.map(project => {
+    project.icon = (project['Multimedia'].length == 0) ? null : project['Multimedia'][0].url
+    if (project.distance) project.distance /= 1000; //Sequelize measures distance in meters
     project.location = project.locationdescription
+
+    delete project['Multimedia']
     delete project['locationdescription']
     return project
   })
 
-  return result.rows
+  return result
 }
 
 
@@ -156,24 +159,7 @@ async function getProject(id){
   return result
 }
 
-async function projectExists(id){
-  return await Project.findByPk(id) ? true : false
-}
-
-async function deleteProject(id){
-  await ProjectTag.projectDeleteTags(id);
-  await Multimedia.projectDeleteMultimedia(id);
-  await Stages.projectDeleteStages(id);
-  return await Project.destroy({ where: { id } });
-}
-
 async function updateProject(id, newData) {
-  //const totalAmount = projectToUpdate.stages.reduce((a, b) => { return a.amount + b.amount })
-//
-  //if (totalAmount == newData.fundedamount){
-  //  newData.actualstate += 1; //Quizas esto deberia setearse manualmente escuchando a un evento
-  //}
-
   const response = await Project.update(newData, { where: { id } });
   if (!response || !response[0]) return 0;
   return response[0] ? await getProject(id) : 0;
@@ -258,9 +244,7 @@ const getProjectMetrics = async(params) => {
 module.exports = {
   getProject,
   getAllProjectsResume,
-  projectExists,
   createProject,
   updateProject,
-  deleteProject,
   getProjectMetrics
 };
