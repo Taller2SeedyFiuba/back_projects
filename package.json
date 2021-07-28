@@ -4,8 +4,9 @@
   "description": "SeedyFiuba project microservice",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect=0.0.0.0:8000 src/index.js",
-    "start": "node src/index.js",
+    "db": "sequelize-cli db:migrate && sequelize-cli db:seed:undo:all && sequelize-cli db:seed:all",
+    "dev": "npm run db && nodemon --inspect=0.0.0.0:8000 src/index.js",
+    "start": "npm run db && node src/index.js",
     "test": "jest --collectCoverage"
   },
   "repository": {
@@ -21,6 +22,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
+    "sequelize-cli": "^6.2.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "joi": "^17.4.0",
