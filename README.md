@@ -28,10 +28,8 @@ Docker-cli must be installed.
    ```git
    git clone https://github.com/Taller2SeedyFiuba/back_projects
    ```
-2. Install NPM packages
-   ```npm
-   npm install
-   ```
+2. [Install Docker](https://docs.docker.com/engine/install/), following it's official installation guide for your os
+
 3. Set up environment variables in an ```.env``` named file based on ```.env.example```.
 
 ## Usage
