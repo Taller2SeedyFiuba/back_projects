@@ -52,6 +52,7 @@ COPY heroku/datadog-config/ /etc/datadog-agent/
 COPY ./src ./src
 COPY /.sequelizerc ./
 COPY /migrations ./migrations
+COPY /seeders ./seeders
 
 # Run entry point
 CMD ["bash", "heroku-entrypoint.sh"]
