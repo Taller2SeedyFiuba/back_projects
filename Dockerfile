@@ -51,7 +51,6 @@ COPY heroku/datadog-config/ /etc/datadog-agent/
 # Copy application source code
 COPY ./src ./src
 COPY /.sequelizerc ./
-COPY /seeders ./seeders
 COPY /migrations ./migrations
 
 # Run entry point
