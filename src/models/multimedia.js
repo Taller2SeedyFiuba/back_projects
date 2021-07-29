@@ -2,12 +2,6 @@ const { Multimedia } = require("../database");
 
 
 async function projectAddMultimedia(projectid, multimedia){
-  //let newMultimedia = [];
-  //let pos = 1;
-  //multimedia.forEach(url => {
-  //  newMultimedia.push({ projectid, position: pos, url })
-  //  pos += 1;
-  //})
   let position = 0;
   multimedia = multimedia.map(function (url) {
     position += 1;

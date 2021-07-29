@@ -11,10 +11,6 @@ RUN apt-get install -y gpg apt-transport-https gpg-agent curl ca-certificates
 ENV DD_APM_ENABLED=true
 ENV DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
 ENV DD_DYNO_HOST=false
-#ENV DD_LOGS_ENABLED=true
-#ENV DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
-#ENV DD_LOGS_CONFIG_DOCKER_CONTAINER_USE_FILE=true
-#ENV DD_CONTAINER_EXCLUDE="name:datadog-agent"
 ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
 ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
 
