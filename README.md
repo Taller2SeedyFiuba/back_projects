@@ -35,10 +35,20 @@ Docker-cli must be installed.
 3. Set up environment variables in an ```.env``` named file based on ```.env.example```.
 
 ## Usage
+Create external network if not exists:
+
+```docker
+docker network create my-net
+```
+
+Run service with associated DB:
 
 ```docker
 docker-compose up --b
 ```
+
+It's important to acknowledge that microservice start may fail if database is not ready. Solution to this situation resides in running the service again.
+
 
 ### Docs
 
